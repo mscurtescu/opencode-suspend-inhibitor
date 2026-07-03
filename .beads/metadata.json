@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "opencode_sleep_inhibitor",
+  "project_id": "52fef039-c42d-46b2-9992-3ce98996aa1d"
+}
