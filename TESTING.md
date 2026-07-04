@@ -65,4 +65,9 @@ No inhibitor should appear in `gnome-session-inhibit --list`.
 
 ## Logs
 
-OpenCode plugin logs use service `sleep-inhibitor` with `backend: "gnome"` in structured `extra` fields.
+OpenCode flattens `extra` fields onto log lines. Every entry from this plugin includes `plugin=opencode-suspend-inhibitor` and `backend=gnome`:
+
+```bash
+grep 'plugin=opencode-suspend-inhibitor' ~/.local/share/opencode/log/opencode.log
+grep 'Plugin initialized' ~/.local/share/opencode/log/opencode.log
+```

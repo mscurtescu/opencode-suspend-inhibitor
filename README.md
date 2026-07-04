@@ -110,7 +110,13 @@ gnome-session-inhibit --list
 
 While an agent is busy, expect an entry with app-id `ai.opencode.desktop` and reason `OpenCode Agent is actively working`.
 
-**Plugin logs:** OpenCode logs use service `sleep-inhibitor` with `backend: "gnome"` in structured `extra` fields. On startup you should see `Plugin initialized` with `available: true`. If `gnome-session-inhibit` is missing, you get a single warning with `available: false`.
+**Plugin logs:** OpenCode flattens `extra` fields onto log lines (`plugin=opencode-suspend-inhibitor`, `backend=gnome`). Filter:
+
+```bash
+grep 'plugin=opencode-suspend-inhibitor' ~/.local/share/opencode/log/opencode.log
+```
+
+On startup you should see `Plugin initialized` with `available=true`. If `gnome-session-inhibit` is missing, you get a single warning with `available=false`.
 
 **Session files while busy:** `/tmp/opencode-suspend-inhibitor/sessions/`
 

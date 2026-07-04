@@ -15,6 +15,7 @@ import {
 } from "./src/sessions";
 
 const SERVICE = "sleep-inhibitor";
+const PLUGIN = "opencode-suspend-inhibitor";
 
 type SessionEvent = {
   type: string;
@@ -35,7 +36,12 @@ export const SleepInhibitorPlugin: Plugin = async ({ client }) => {
     extra: Record<string, unknown> = {},
   ) =>
     client.app.log({
-      body: { level, service: SERVICE, message, extra: { backend: BACKEND, ...extra } },
+      body: {
+        level,
+        service: SERVICE,
+        message,
+        extra: { plugin: PLUGIN, backend: BACKEND, ...extra },
+      },
     });
 
   const noOp = (reason: string, extra: Record<string, unknown> = {}) => {
