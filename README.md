@@ -39,6 +39,8 @@ Session state is tracked via files in `/tmp/opencode-sleep-inhibitor/sessions/`.
 }
 ```
 
+See [TESTING.md](TESTING.md) for smoke tests and OpenCode verification steps.
+
 ## Related
 
 - [opencode-wakelock](https://github.com/IgnisDa/opencode-wakelock) — macOS
