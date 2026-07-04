@@ -38,20 +38,19 @@ export const SleepInhibitorPlugin: Plugin = async ({ client }) => {
       body: { level, service: SERVICE, message, extra: { backend: BACKEND, ...extra } },
     });
 
-  if (!isLinux()) {
-    void log("info", "Plugin loaded (no-op on non-Linux)", {
-      platform: process.platform,
-      available: false,
-    });
+  const noOp = (reason: string, extra: Record<string, unknown> = {}) => {
+    void log("warn", reason, { available: false, ...extra });
     return { event: async () => {} };
+  };
+
+  if (!isLinux()) {
+    return noOp("Plugin inactive on non-Linux platform", {
+      platform: process.platform,
+    });
   }
 
-  const available = await resolveAvailability();
-  if (!available) {
-    void log("warn", "gnome-session-inhibit not available; plugin is a no-op", {
-      available: false,
-    });
-    return { event: async () => {} };
+  if (!(await resolveAvailability())) {
+    return noOp("gnome-session-inhibit not available; plugin inactive");
   }
 
   const activeOnStartup = startupCleanup();

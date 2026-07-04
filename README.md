@@ -19,6 +19,10 @@ Restart OpenCode.
 - Linux with GNOME Session Manager
 - `gnome-session-inhibit` (package `gnome-session-bin` on Debian/Ubuntu)
 
+On other platforms or when the binary is missing, the plugin loads but does nothing
+(one warning in OpenCode logs). macOS users should use
+[opencode-wakelock](https://github.com/IgnisDa/opencode-wakelock).
+
 ## How it works
 
 On `session.status` busy, the plugin registers the session and runs `gnome-session-inhibit` (suspend + idle). On idle or error, it deregisters; the inhibitor stops when no sessions remain.
