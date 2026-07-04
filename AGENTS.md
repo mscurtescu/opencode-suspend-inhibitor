@@ -3,10 +3,11 @@
 This project uses **bd** (beads) for issue tracking. Run `bd prime` for full workflow context.
 
 > **Architecture in one line:** Issues live in a local Dolt database
-> (`.beads/dolt/`); cross-machine sync uses `bd dolt push/pull` (a
-> git-compatible protocol), stored under `refs/dolt/data` on your git
-> remote — separate from `refs/heads/*` where your code lives.
-> `.beads/issues.jsonl` is a passive export, not the wire protocol.
+> (`.beads/embeddeddolt/` in embedded mode); cross-machine sync uses
+> `bd dolt push/pull` (a git-compatible protocol), stored under
+> `refs/dolt/data` on your git remote — separate from `refs/heads/*`
+> where your code lives. `.beads/issues.jsonl` and
+> `.beads/interactions.jsonl` are passive exports, not the wire protocol.
 >
 > See [SYNC_CONCEPTS.md](https://github.com/gastownhall/beads/blob/main/docs/SYNC_CONCEPTS.md)
 > for the one-screen overview and anti-patterns (don't treat JSONL as the
@@ -22,6 +23,20 @@ bd update <id> --claim  # Claim work atomically
 bd close <id>         # Complete work
 bd dolt push          # Push beads data to remote
 ```
+
+## Git and beads commit order
+
+Finish all `bd` updates **before** `git commit`, then commit code and JSONL
+exports together in one commit:
+
+1. Implement and verify (tests, typecheck)
+2. `bd close <id> --reason "..."` and any `bd comments add` / `bd update`
+3. Stage code plus `.beads/issues.jsonl` and `.beads/interactions.jsonl`
+4. `git commit` (pre-commit hook refreshes exports if `export.auto` is on)
+
+Do **not** commit code first and close beads issues second — that leaves JSONL
+exports dirty and forces an extra commit. Primary cross-machine sync is
+`bd dolt push`; JSONL files are optional git snapshots for PR diffs.
 
 ## Non-Interactive Shell Commands
 
