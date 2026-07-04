@@ -1,4 +1,4 @@
-# Testing opencode-sleep-inhibitor
+# Testing opencode-suspend-inhibitor
 
 ## Automated smoke test
 
@@ -49,7 +49,7 @@ Restart OpenCode after changing config.
 3. Release one instance — inhibitor should **remain**.
 4. Release both — inhibitor should stop.
 
-Session files (while busy): `/tmp/opencode-sleep-inhibitor/sessions/`
+Session files (while busy): `/tmp/opencode-suspend-inhibitor/sessions/`
 
 ### 4. Missing binary (no-op)
 

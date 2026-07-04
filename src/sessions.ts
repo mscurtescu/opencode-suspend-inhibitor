@@ -10,13 +10,13 @@ import {
 /**
  * Per-OpenCode-instance session registry (mirrors opencode-wakelock).
  *
- * Each busy session writes `/tmp/opencode-sleep-inhibitor/sessions/<sessionID>`
+ * Each busy session writes `/tmp/opencode-suspend-inhibitor/sessions/<sessionID>`
  * containing the owning OpenCode process PID. Multiple OpenCode instances
  * share one gnome-session-inhibit process; the inhibitor stops only when no
  * session files remain for live PIDs. Stale files are pruned when the
  * recorded PID is no longer running.
  */
-export const TMP_DIR = "/tmp/opencode-sleep-inhibitor";
+export const TMP_DIR = "/tmp/opencode-suspend-inhibitor";
 export const SESSIONS_DIR = `${TMP_DIR}/sessions`;
 
 export function isProcessAlive(pid: number): boolean {
