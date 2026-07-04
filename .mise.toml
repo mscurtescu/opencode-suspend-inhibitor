@@ -1,5 +1,9 @@
 [tools]
-# Beads - pinned to latest stable (as of July 2026)
+# Beads
 "github:gastownhall/beads" = "1.0.4"
+
 # Bun - OpenCode loads plugins via Bun; used locally for install/typecheck
 bun = "1.3.14"
+
+# beads-ui (web dashboard)
+"npm:beads-ui" = "0.12.1"
