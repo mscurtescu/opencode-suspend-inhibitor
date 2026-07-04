@@ -24,10 +24,25 @@ bd close <id>         # Complete work
 bd dolt push          # Push beads data to remote
 ```
 
+## Git commits require user review
+
+**Never run `git commit` without explicit user approval.**
+
+After changes are ready:
+
+1. Show what changed (`git status`, summary of diff intent)
+2. **Suggest** a commit message (do not commit yet)
+3. Wait for an explicit go-ahead (e.g. "commit", "go", "looks good — commit")
+
+Task instructions like "proceed", "next issue", or "implement .3" are **not**
+commit approval. Explicit approval examples: "commit", "go", "close and
+commit", "looks good — commit". When in doubt, stop after the suggested message
+and ask.
+
 ## Git and beads commit order
 
-Finish all `bd` updates **before** `git commit`, then commit code and JSONL
-exports together in one commit:
+When the user approves a commit, finish all `bd` updates **before** `git commit`,
+then commit code and JSONL exports together in one commit:
 
 1. Implement and verify (tests, typecheck)
 2. `bd close <id> --reason "..."` and any `bd comments add` / `bd update`
