@@ -8,9 +8,9 @@ import {
   syncInhibitor,
 } from "./src/backends/gnome";
 import {
-  acquireSession,
+  acquire,
   getActiveSessions,
-  releaseSession,
+  release,
   startupCleanup,
 } from "./src/sessions";
 
@@ -61,6 +61,7 @@ export const SleepInhibitorPlugin: Plugin = async ({ client }) => {
     available: true,
     pid: process.pid,
     activeSessions: activeOnStartup.length,
+    sessionIDs: activeOnStartup,
   });
 
   process.on("exit", stopInhibitorOnExit);
@@ -71,15 +72,16 @@ export const SleepInhibitorPlugin: Plugin = async ({ client }) => {
       return;
     }
 
-    if (action === "acquire") acquireSession(sessionID);
-    else releaseSession(sessionID);
+    if (action === "acquire") acquire(sessionID);
+    else release(sessionID);
 
     const active = getActiveSessions();
     await syncInhibitor(active.length);
 
-    void log("info", action === "acquire" ? "Session busy" : "Session released", {
+    void log("info", action === "acquire" ? "Acquired session" : "Released session", {
       sessionID,
       activeSessions: active.length,
+      sessionIDs: active,
     });
   };
 

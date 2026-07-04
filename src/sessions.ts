@@ -7,6 +7,15 @@ import {
   writeFileSync,
 } from "node:fs";
 
+/**
+ * Per-OpenCode-instance session registry (mirrors opencode-wakelock).
+ *
+ * Each busy session writes `/tmp/opencode-sleep-inhibitor/sessions/<sessionID>`
+ * containing the owning OpenCode process PID. Multiple OpenCode instances
+ * share one gnome-session-inhibit process; the inhibitor stops only when no
+ * session files remain for live PIDs. Stale files are pruned when the
+ * recorded PID is no longer running.
+ */
 export const TMP_DIR = "/tmp/opencode-sleep-inhibitor";
 export const SESSIONS_DIR = `${TMP_DIR}/sessions`;
 
@@ -43,12 +52,12 @@ export function getActiveSessions(): string[] {
   return active;
 }
 
-export function acquireSession(sessionID: string): void {
+export function acquire(sessionID: string): void {
   ensureDirs();
   writeFileSync(`${SESSIONS_DIR}/${sessionID}`, String(process.pid));
 }
 
-export function releaseSession(sessionID: string): void {
+export function release(sessionID: string): void {
   try {
     unlinkSync(`${SESSIONS_DIR}/${sessionID}`);
   } catch {
@@ -56,6 +65,7 @@ export function releaseSession(sessionID: string): void {
   }
 }
 
+/** Prune stale session files and return remaining active session IDs. */
 export function startupCleanup(): string[] {
   ensureDirs();
   return getActiveSessions();

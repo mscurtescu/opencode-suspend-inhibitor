@@ -21,7 +21,11 @@ Restart OpenCode.
 
 ## How it works
 
-On `session.status` busy, the plugin registers the session and runs `gnome-session-inhibit` (suspend + idle). On idle or error, it deregisters; the inhibitor stops when no sessions remain. Session state lives under `/tmp/opencode-sleep-inhibitor/sessions/`.
+On `session.status` busy, the plugin registers the session and runs `gnome-session-inhibit` (suspend + idle). On idle or error, it deregisters; the inhibitor stops when no sessions remain.
+
+## Multi-instance
+
+Session state is tracked via files in `/tmp/opencode-sleep-inhibitor/sessions/`. Each file is named by OpenCode `sessionID` and stores the owning OpenCode process PID. A single `gnome-session-inhibit` process is shared across all OpenCode instances on the machine; it stops only when no active sessions remain. Stale session files from crashed instances are pruned automatically when the recorded PID is no longer running.
 
 ## Dev install
 
