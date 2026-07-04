@@ -58,3 +58,5 @@ backup:
 export.auto: false
 
 export.git-add: false
+
+sync.remote: "git+ssh://git@github.com/mscurtescu/opencode-suspend-inhibitor.git"
