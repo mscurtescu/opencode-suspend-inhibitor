@@ -7,7 +7,8 @@ This project uses **bd** (beads) for issue tracking. Run `bd prime` for full wor
 > `bd dolt push/pull` (a git-compatible protocol), stored under
 > `refs/dolt/data` on your git remote — separate from `refs/heads/*`
 > where your code lives. `.beads/issues.jsonl` and
-> `.beads/interactions.jsonl` are passive exports, not the wire protocol.
+> `.beads/interactions.jsonl` are optional local exports (gitignored here),
+> not the wire protocol.
 >
 > See [SYNC_CONCEPTS.md](https://github.com/gastownhall/beads/blob/main/docs/SYNC_CONCEPTS.md)
 > for the one-screen overview and anti-patterns (don't treat JSONL as the
@@ -39,19 +40,19 @@ commit approval. Explicit approval examples: "commit", "go", "close and
 commit", "looks good — commit". When in doubt, stop after the suggested message
 and ask.
 
-## Git and beads commit order
+## Git and beads workflow
 
-When the user approves a commit, finish all `bd` updates **before** `git commit`,
-then commit code and JSONL exports together in one commit:
+When the user approves a commit:
 
 1. Implement and verify (tests, typecheck)
-2. `bd close <id> --reason "..."` and any `bd comments add` / `bd update`
-3. Stage code plus `.beads/issues.jsonl` and `.beads/interactions.jsonl`
-4. `git commit` (pre-commit hook refreshes exports if `export.auto` is on)
+2. `bd close <id> --reason "..."` and any `bd comment` / `bd update`
+3. `bd dolt push` — sync issue state to remote (`refs/dolt/data`)
+4. Stage and commit **code/config only** (not `.beads/*.jsonl`)
+5. `git push`
 
-Do **not** commit code first and close beads issues second — that leaves JSONL
-exports dirty and forces an extra commit. Primary cross-machine sync is
-`bd dolt push`; JSONL files are optional git snapshots for PR diffs.
+JSONL exports are gitignored and auto-export is off (`export.auto: false` in
+`.beads/config.yaml`). They may exist locally for viewers but are never
+committed. Cross-machine beads sync is `bd dolt push` / `bd dolt pull`.
 
 ## Non-Interactive Shell Commands
 
