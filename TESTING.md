@@ -11,20 +11,75 @@ chmod +x scripts/smoke-test.sh
 
 Covers: TypeScript typecheck, `gnome-session-inhibit` on PATH, session registry acquire/release.
 
-## OpenCode integration (manual)
+## Dev plugin (`file://`) vs published npm
 
-Add the dev plugin to `~/.config/opencode/opencode.jsonc`:
+OpenCode loads plugins from `~/.config/opencode/opencode.jsonc`. Two modes:
+
+| Config entry | Source |
+|--------------|--------|
+| `"opencode-suspend-inhibitor"` | Published npm package (`~/.cache/opencode/node_modules/`) |
+| `"file:///…/opencode-suspend-inhibitor"` | Local git clone (live dev) |
+
+Use **one** entry at a time — do not list both.
+
+### `opencode plugin` (npm only)
+
+```bash
+opencode plugin opencode-suspend-inhibitor      # install + add to project opencode.jsonc
+opencode plugin -g opencode-suspend-inhibitor   # install + add to ~/.config/opencode/opencode.jsonc
+opencode plugin -f opencode-suspend-inhibitor   # force reinstall (e.g. after npm publish)
+```
+
+This command installs from **npm** and writes the package name into config. It does **not** support `file://` paths — use manual config edit below for local clone dev.
+
+Running `opencode plugin …` while testing a `file://` entry will replace it with the npm package name.
+
+### Switch to local clone
+
+Edit `~/.config/opencode/opencode.jsonc`:
 
 ```jsonc
 {
   "$schema": "https://opencode.ai/config.json",
   "plugin": [
-    "file:///home/marius/Work/iden2/github.com/mscurtescu/opencode-sleep-inhibitor"
+    "file:///path/to/opencode-suspend-inhibitor"
   ]
 }
 ```
 
-Restart OpenCode after changing config.
+Use the absolute path to your clone (three slashes after `file:`). Example:
+
+`file:///home/marius/Work/iden2/github.com/mscurtescu/opencode-sleep-inhibitor`
+
+**Restart OpenCode** after changing config. Plugins load at startup only; edit `index.ts`, restart, re-test.
+
+### Switch back to published npm
+
+Either edit config:
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["opencode-suspend-inhibitor"]
+}
+```
+
+Or run `opencode plugin opencode-suspend-inhibitor` (or `-f` to refresh the cache after a new publish).
+
+Restart OpenCode. It uses the cached npm install from `~/.cache/opencode/node_modules/`.
+
+### Verify which plugin loaded
+
+```bash
+opencode debug info
+grep 'plugin=opencode-suspend-inhibitor' ~/.local/share/opencode/log/opencode.log | tail -5
+```
+
+After code changes on `file://`, confirm new log behavior (e.g. `plugin=opencode-suspend-inhibitor` on every line) before assuming the clone is active.
+
+## OpenCode integration (manual)
+
+Requires the **dev `file://` config** above (or publish to npm and use the package name). Restart OpenCode after any config change.
 
 ### 1. Busy → inhibitor active
 
