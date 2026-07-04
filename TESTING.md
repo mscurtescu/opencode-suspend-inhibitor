@@ -68,6 +68,38 @@ Or run `opencode plugin opencode-suspend-inhibitor` (or `-f` to refresh the cach
 
 Restart OpenCode. It uses the cached npm install from `~/.cache/opencode/node_modules/`.
 
+### Updating after npm publish
+
+OpenCode **caches** npm plugins under `~/.cache/opencode/packages/`. The resolved version is pinned in that cache (e.g. `"opencode-suspend-inhibitor": "0.0.1"`). **Restart alone does not check npm for a newer version.**
+
+| Action | Fetches new npm version? |
+|--------|--------------------------|
+| Restart OpenCode | No — uses cached copy |
+| `opencode plugin opencode-suspend-inhibitor` (no `-f`) | Usually no — skips if already installed |
+| `opencode plugin -f opencode-suspend-inhibitor` | Yes — force reinstall from npm |
+| Delete `~/.cache/opencode/packages/opencode-suspend-inhibitor*` + restart | Yes — fresh install |
+
+Using `@latest` in config (e.g. `"opencode-suspend-inhibitor@latest"`) still resolves **once at install time** and then caches that version. It does not re-resolve on every restart.
+
+**After a new publish**, refresh and restart:
+
+```bash
+opencode plugin -f opencode-suspend-inhibitor
+# restart OpenCode
+cat ~/.cache/opencode/packages/opencode-suspend-inhibitor/package.json
+```
+
+Check the `dependencies` version matches what you published.
+
+**Maintainer publish flow** (brief):
+
+1. Bump `version` in `package.json`, update `CHANGELOG.md`
+2. `npm publish --access public`
+3. `git tag vX.Y.Z && git push origin main --tags`
+4. Users run `opencode plugin -f opencode-suspend-inhibitor` and restart OpenCode
+
+While developing unreleased changes, use the **`file://` config** above — no publish or `-f` needed; restart after edits.
+
 ### Verify which plugin loaded
 
 ```bash
