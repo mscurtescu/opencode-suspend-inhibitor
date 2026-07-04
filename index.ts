@@ -1,0 +1,105 @@
+import type { Plugin } from "@opencode-ai/plugin";
+
+import {
+  BACKEND,
+  isLinux,
+  resolveAvailability,
+  stopInhibitorOnExit,
+  syncInhibitor,
+} from "./src/backends/gnome";
+import {
+  acquireSession,
+  getActiveSessions,
+  releaseSession,
+  startupCleanup,
+} from "./src/sessions";
+
+const SERVICE = "sleep-inhibitor";
+
+type SessionEvent = {
+  type: string;
+  properties?: {
+    sessionID?: string;
+    status?: { type?: string };
+  };
+};
+
+function sessionIDFrom(event: SessionEvent): string | undefined {
+  return event.properties?.sessionID;
+}
+
+export const SleepInhibitorPlugin: Plugin = async ({ client }) => {
+  const log = (
+    level: "info" | "warn" | "error" | "debug",
+    message: string,
+    extra: Record<string, unknown> = {},
+  ) =>
+    client.app.log({
+      body: { level, service: SERVICE, message, extra: { backend: BACKEND, ...extra } },
+    });
+
+  if (!isLinux()) {
+    void log("info", "Plugin loaded (no-op on non-Linux)", {
+      platform: process.platform,
+      available: false,
+    });
+    return { event: async () => {} };
+  }
+
+  const available = await resolveAvailability();
+  if (!available) {
+    void log("warn", "gnome-session-inhibit not available; plugin is a no-op", {
+      available: false,
+    });
+    return { event: async () => {} };
+  }
+
+  const activeOnStartup = startupCleanup();
+  await syncInhibitor(activeOnStartup.length);
+
+  void log("info", "Plugin initialized", {
+    available: true,
+    pid: process.pid,
+    activeSessions: activeOnStartup.length,
+  });
+
+  process.on("exit", stopInhibitorOnExit);
+
+  const sync = async (sessionID: string | undefined, action: "acquire" | "release") => {
+    if (!sessionID) {
+      void log("warn", "Session event missing sessionID", { action });
+      return;
+    }
+
+    if (action === "acquire") acquireSession(sessionID);
+    else releaseSession(sessionID);
+
+    const active = getActiveSessions();
+    await syncInhibitor(active.length);
+
+    void log("info", action === "acquire" ? "Session busy" : "Session released", {
+      sessionID,
+      activeSessions: active.length,
+    });
+  };
+
+  return {
+    event: async ({ event }) => {
+      const typed = event as SessionEvent;
+
+      if (typed.type === "session.status") {
+        const statusType = typed.properties?.status?.type;
+        if (statusType === "busy") {
+          await sync(sessionIDFrom(typed), "acquire");
+        } else if (statusType === "idle") {
+          await sync(sessionIDFrom(typed), "release");
+        }
+        return;
+      }
+
+      if (typed.type === "session.idle" || typed.type === "session.error") {
+        await sync(sessionIDFrom(typed), "release");
+      }
+    },
+  };
+};

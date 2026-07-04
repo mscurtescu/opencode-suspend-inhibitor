@@ -1,0 +1,32 @@
+{
+  "name": "opencode-sleep-inhibitor",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "index.ts",
+  "description": "Prevent sleep/suspend while OpenCode agent is active (Linux/GNOME)",
+  "license": "MIT",
+  "author": "Marius Scurtescu",
+  "homepage": "https://github.com/mscurtescu/opencode-sleep-inhibitor#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mscurtescu/opencode-sleep-inhibitor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mscurtescu/opencode-sleep-inhibitor/issues"
+  },
+  "engines": {
+    "opencode": ">=1.14.0"
+  },
+  "keywords": [
+    "opencode",
+    "plugin",
+    "sleep",
+    "gnome",
+    "linux",
+    "inhibit"
+  ],
+  "devDependencies": {
+    "@opencode-ai/plugin": "latest",
+    "bun-types": "latest"
+  }
+}
