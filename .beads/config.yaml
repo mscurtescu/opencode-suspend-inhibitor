@@ -49,6 +49,11 @@ backup:
 sync:
   remote: git+ssh://git@github.com/mscurtescu/opencode-suspend-inhibitor.git
 
+# Auto-push beads to remote after writes (solo-dev; debounced)
+dolt:
+  auto-push: true
+  auto-push-interval: 5m
+
 # Integration settings (access with 'bd config get/set')
 # Non-secret keys (stored in the database):
 # - jira.url, jira.project

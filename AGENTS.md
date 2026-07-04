@@ -46,13 +46,15 @@ When the user approves a commit:
 
 1. Implement and verify (tests, typecheck)
 2. `bd close <id> --reason "..."` and any `bd comment` / `bd update`
-3. `bd dolt push` — sync issue state to remote (`refs/dolt/data`)
+3. Beads auto-pushes to remote after writes (`dolt.auto-push: true`, 5m debounce).
+   Run `bd dolt push` manually if you need immediate sync before another machine pulls.
 4. Stage and commit **code/config only** (not `.beads/*.jsonl`)
 5. `git push`
 
 JSONL exports are gitignored and auto-export is off (`export.auto: false` in
 `.beads/config.yaml`). They may exist locally for viewers but are never
-committed. Cross-machine beads sync is `bd dolt push` / `bd dolt pull`.
+committed. Cross-machine beads sync is `bd dolt push` / `bd dolt pull` (auto-push
+enabled for solo use).
 
 ## Non-Interactive Shell Commands
 
