@@ -1,5 +1,7 @@
 # opencode-suspend-inhibitor
 
+[![npm version](https://img.shields.io/npm/v/opencode-suspend-inhibitor.svg)](https://www.npmjs.com/package/opencode-suspend-inhibitor)
+
 Prevents Linux/GNOME from suspending or idling the screen while an OpenCode agent session is actively running. Releases the inhibitor the moment all sessions go idle or error. Supports multiple parallel OpenCode instances.
 
 Linux/GNOME counterpart to [opencode-wakelock](https://github.com/IgnisDa/opencode-wakelock) (macOS).
@@ -7,6 +9,8 @@ Linux/GNOME counterpart to [opencode-wakelock](https://github.com/IgnisDa/openco
 > **Naming:** The npm package [`opencode-sleep-inhibitor`](https://www.npmjs.com/package/opencode-sleep-inhibitor) is already published by another author (cross-platform `systemd-inhibit` / `caffeinate`). This plugin is **`opencode-suspend-inhibitor`** — GNOME `gnome-session-inhibit` with `suspend:idle`.
 
 ## Install
+
+Published on npm: [opencode-suspend-inhibitor](https://www.npmjs.com/package/opencode-suspend-inhibitor)
 
 Add to `~/.config/opencode/opencode.json` or `opencode.jsonc` (merge into your existing config):
 
