@@ -37,6 +37,11 @@ tasks:
     cmds:
       - bd list
 
+  beads:blocked:
+    desc: Show issues blocked by open dependencies
+    cmds:
+      - bd blocked
+
   beads:push:
     desc: Push beads state to Dolt remote
     cmds:
