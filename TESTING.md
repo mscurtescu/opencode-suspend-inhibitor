@@ -2,7 +2,13 @@
 
 ## Automated smoke test
 
-From the repo root (requires `mise install` / `bun` on PATH):
+From the repo root (`mise install` provides `task`, `bun`, `bd`):
+
+```bash
+task test
+```
+
+Or directly:
 
 ```bash
 chmod +x scripts/smoke-test.sh

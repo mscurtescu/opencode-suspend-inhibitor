@@ -100,6 +100,23 @@ For local development before publish, point at a clone with a `file://` URL:
 
 See [TESTING.md](TESTING.md) for smoke tests and OpenCode verification steps.
 
+## Development tasks
+
+Requires [mise](https://mise.jdx.dev/) (`mise install` pins `task`, `bun`, `bd`):
+
+```bash
+task              # list tasks
+task install      # bun install
+task typecheck    # tsc --noEmit
+task test         # smoke tests
+task beads:list       # bd list --flat (one line per issue, with type)
+task beads:list:tree  # bd list (hierarchical tree)
+task beads:ready      # bd ready
+task beads:push       # bd dolt push
+task bdui:start   # beads-ui at http://127.0.0.1:3000
+task bdui:stop    # stop beads-ui
+```
+
 ## Troubleshooting
 
 **Check whether an inhibitor is active:**

@@ -1,4 +1,7 @@
 [tools]
+# Task runner (Taskfile.yml)
+task = "3.43.3"
+
 # Beads
 "github:gastownhall/beads" = "1.0.4"
 

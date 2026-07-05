@@ -1,0 +1,53 @@
+version: "3"
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+
+  install:
+    desc: Install bun dev dependencies
+    cmds:
+      - bun install
+
+  typecheck:
+    desc: TypeScript check (no emit)
+    cmds:
+      - bunx tsc --noEmit
+
+  test:
+    desc: Smoke test (typecheck, session registry, gnome-session-inhibit)
+    cmds:
+      - ./scripts/smoke-test.sh
+
+  beads:ready:
+    desc: Show unblocked beads issues
+    cmds:
+      - bd ready
+
+  beads:list:flat:
+    desc: List beads issues (flat, one line per issue with type)
+    aliases: [beads:list]
+    cmds:
+      - bd list --flat
+
+  beads:list:tree:
+    desc: List beads issues (hierarchical tree)
+    cmds:
+      - bd list
+
+  beads:push:
+    desc: Push beads state to Dolt remote
+    cmds:
+      - bd dolt push
+
+  bdui:start:
+    desc: Start beads-ui web dashboard (default http://127.0.0.1:3000)
+    cmds:
+      - bdui start
+
+  bdui:stop:
+    desc: Stop beads-ui web dashboard
+    cmds:
+      - bdui stop
