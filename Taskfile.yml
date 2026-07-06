@@ -21,6 +21,23 @@ tasks:
     cmds:
       - ./scripts/smoke-test.sh
 
+  container:build:
+    desc: Build dev container image (PROFILE=ubuntu2404)
+    cmds:
+      - docker build -t opencode-suspend-inhibitor-dev:${PROFILE:-ubuntu2404} -f docker/Dockerfile.${PROFILE:-ubuntu2404} docker/
+
+  container:run:
+    desc: Run dev container with repo bind-mounted (interactive shell)
+    deps: [container:build]
+    cmds:
+      - docker run -it --rm -v "$PWD:/workspace/opencode-suspend-inhibitor:rw" -e PLUGIN_DIR=/workspace/opencode-suspend-inhibitor -e VERIFY_ON_START=${VERIFY_ON_START:-1} opencode-suspend-inhibitor-dev:${PROFILE:-ubuntu2404}
+
+  container:verify:
+    desc: Verify dev container toolchain and plugin config (non-interactive)
+    deps: [container:build]
+    cmds:
+      - docker run --rm -v "$PWD:/workspace/opencode-suspend-inhibitor:rw" -e PLUGIN_DIR=/workspace/opencode-suspend-inhibitor -e VERIFY_ON_START=0 opencode-suspend-inhibitor-dev:${PROFILE:-ubuntu2404} /opt/container/verify.sh
+
   beads:ready:
     desc: Show unblocked beads issues
     cmds:

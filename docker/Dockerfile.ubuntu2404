@@ -1,0 +1,29 @@
+# Ubuntu 24.04 LTS — gnome-session-inhibit via gnome-session-bin
+# Build: task container:build
+# Run:   task container:run
+
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update -qq \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    dbus \
+    dbus-x11 \
+    gnome-session-bin \
+  && rm -rf /var/lib/apt/lists/* \
+  && curl -fsSL https://opencode.ai/install | bash \
+  && ln -sf /root/.opencode/bin/opencode /usr/local/bin/opencode
+
+COPY entrypoint.sh verify.sh /opt/container/
+RUN chmod +x /opt/container/*.sh
+
+WORKDIR /workspace
+ENV PLUGIN_DIR=/workspace/opencode-suspend-inhibitor
+ENV VERIFY_ON_START=1
+ENV PATH="/root/.opencode/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+ENTRYPOINT ["/opt/container/entrypoint.sh"]
+CMD ["bash"]

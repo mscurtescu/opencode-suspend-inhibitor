@@ -113,6 +113,9 @@ task beads:list       # bd list --flat (one line per issue, with type)
 task beads:list:tree  # bd list (hierarchical tree)
 task beads:ready      # bd ready
 task beads:push       # bd dolt push
+task container:build  # Docker dev image for integration tests
+task container:run    # shell in dev container (repo bind-mounted)
+task container:verify # verify container + plugin config
 task bdui:start   # beads-ui at http://127.0.0.1:3000
 task bdui:stop    # stop beads-ui
 ```

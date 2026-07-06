@@ -17,6 +17,29 @@ chmod +x scripts/smoke-test.sh
 
 Covers: TypeScript typecheck, `gnome-session-inhibit` on PATH, session registry acquire/release.
 
+## Dev container (integration test environment)
+
+Reproducible Linux environment for integration testing and Docker-based development. One Dockerfile per profile (`docker/Dockerfile.<profile>`); default is Ubuntu 24.04 (`ubuntu2404`).
+
+**Requires:** Docker
+
+```bash
+task container:build              # build image
+task container:verify             # non-interactive smoke inside container
+task container:run                # interactive shell, repo mounted at /workspace/opencode-suspend-inhibitor
+```
+
+`container:run` depends on `container:build`. `container:verify` runs the in-container verify script non-interactively.
+
+Inside the container:
+
+- Repo is mounted at `/workspace/opencode-suspend-inhibitor`
+- `~/.config/opencode/opencode.jsonc` points at `file:///workspace/opencode-suspend-inhibitor`
+- `gnome-session-inhibit` and `opencode` (curl installer) are on `PATH`
+- No Node/npm/Bun in the container — OpenCode bundles what it needs for plugins
+
+Add another distro: copy `docker/Dockerfile.ubuntu2404` (see `docker/README.md`).
+
 ## Dev plugin (`file://`) vs published npm
 
 OpenCode loads plugins from `~/.config/opencode/opencode.jsonc`. Two modes:
