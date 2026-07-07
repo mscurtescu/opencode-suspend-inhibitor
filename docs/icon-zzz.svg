@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#131010"/>
+  <path d="M320 224V352H192V224H320Z" fill="#5A5858"/>
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M384 416H128V96H384V416ZM320 160H192V352H320V160Z" fill="white"/>
+  <g fill="#7BA8D8">
+    <path d="M412 108H452V118H428L452 138V148H412V138H436L412 118Z" opacity="0.95"/>
+    <path d="M396 156H428V164H408L428 180V188H396V180H416L396 164Z" opacity="0.75"/>
+    <path d="M384 198H408V204H392L408 218V224H384V218H400L384 204Z" opacity="0.55"/>
+  </g>
+</svg>

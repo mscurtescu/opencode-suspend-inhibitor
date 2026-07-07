@@ -1,5 +1,9 @@
 # opencode-suspend-inhibitor
 
+<p align="center">
+  <img src="docs/icon-moon.svg" alt="opencode-suspend-inhibitor" width="128">
+</p>
+
 [![npm version](https://img.shields.io/npm/v/opencode-suspend-inhibitor?style=flat-square)](https://www.npmjs.com/package/opencode-suspend-inhibitor)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://github.com/mscurtescu/opencode-suspend-inhibitor/blob/main/LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white&style=flat-square)](https://www.typescriptlang.org/)
