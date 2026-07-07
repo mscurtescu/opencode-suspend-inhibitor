@@ -2,10 +2,10 @@
   "name": "opencode-suspend-inhibitor",
   "version": "0.0.1",
   "type": "module",
-  "main": "index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
-    "index.ts",
-    "src",
+    "dist",
     "README.md",
     "LICENSE"
   ],
@@ -24,9 +24,11 @@
     "opencode": ">=1.14.0"
   },
   "scripts": {
+    "build": "bunx tsc",
+    "prepublishOnly": "bunx tsc",
     "test": "bun test",
     "test:smoke": "./scripts/smoke-test.sh",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "bunx tsc --noEmit"
   },
   "keywords": [
     "opencode",
@@ -35,10 +37,13 @@
     "sleep",
     "gnome",
     "linux",
-    "inhibit"
+    "inhibit",
+    "inhibitor",
+    "power"
   ],
   "devDependencies": {
     "@opencode-ai/plugin": "latest",
     "bun-types": "latest"
-  }
+  },
+  "sideEffects": false
 }

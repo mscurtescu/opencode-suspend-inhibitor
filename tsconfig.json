@@ -4,6 +4,12 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "strict": true,
-    "types": ["bun-types"]
-  }
+    "types": ["bun-types"],
+    "rootDir": ".",
+    "outDir": "dist",
+    "declaration": true,
+    "skipLibCheck": true
+  },
+  "include": ["index.ts", "src/**/*.ts"],
+  "exclude": ["test/**/*.ts", "scripts/**/*.ts", "node_modules"]
 }

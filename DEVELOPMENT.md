@@ -11,11 +11,14 @@ mise install          # pins task, bun, bd
 bun install           # dev dependencies
 ```
 
-Typecheck:
+Typecheck and build:
 
 ```bash
 task typecheck        # bunx tsc --noEmit
+task build            # bunx tsc → dist/
 ```
+
+The npm package ships compiled JS from `dist/`. `npm run build` (or `task build`) regenerates it. `prepublishOnly` runs the build automatically before `npm publish`.
 
 ## Testing
 
@@ -268,6 +271,7 @@ Requires [mise](https://mise.jdx.dev/) (`mise install` pins `task`, `bun`, `bd`)
 task              # list tasks
 task install      # bun install
 task typecheck    # tsc --noEmit
+task build        # compile TypeScript to dist/
 task test:unit    # unit tests (bun:test, headless-CI friendly)
 task test:smoke   # smoke tests (typecheck, session registry, gnome-session-inhibit)
 task test         # unit + smoke tests

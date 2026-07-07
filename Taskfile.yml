@@ -16,6 +16,11 @@ tasks:
     cmds:
       - bunx tsc --noEmit
 
+  build:
+    desc: Compile TypeScript to dist/
+    cmds:
+      - bunx tsc
+
   test:unit:
     desc: Run unit tests (bun:test, headless-CI friendly)
     cmds:
