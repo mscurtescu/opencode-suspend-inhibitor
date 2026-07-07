@@ -1,12 +1,12 @@
 # opencode-suspend-inhibitor
 
-[![npm version](https://img.shields.io/npm/v/opencode-suspend-inhibitor.svg)](https://www.npmjs.com/package/opencode-suspend-inhibitor)
+[![npm version](https://img.shields.io/npm/v/opencode-suspend-inhibitor?style=flat-square)](https://www.npmjs.com/package/opencode-suspend-inhibitor)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://github.com/mscurtescu/opencode-suspend-inhibitor/blob/main/LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white&style=flat-square)](https://www.typescriptlang.org/)
+[![Bun](https://img.shields.io/badge/Bun-000000?logo=bun&logoColor=white&style=flat-square)](https://bun.sh/)
+[![Linux + GNOME](https://img.shields.io/badge/Platform-Linux%20%2B%20GNOME-0078D4?style=flat-square)](https://github.com/mscurtescu/opencode-suspend-inhibitor)
 
 Prevents Linux/GNOME from suspending or idling the screen while an OpenCode agent session is actively running. Releases the inhibitor the moment all sessions go idle or error. Supports multiple parallel OpenCode instances.
-
-Linux/GNOME counterpart to [opencode-wakelock](https://github.com/IgnisDa/opencode-wakelock) (macOS).
-
-> **Naming:** The npm package [`opencode-sleep-inhibitor`](https://www.npmjs.com/package/opencode-sleep-inhibitor) is already published by another author (cross-platform `systemd-inhibit` / `caffeinate`). This plugin is **`opencode-suspend-inhibitor`** — GNOME `gnome-session-inhibit` with `suspend:idle`.
 
 ## Install
 
@@ -22,7 +22,7 @@ Add to `~/.config/opencode/opencode.json` or `opencode.jsonc` (merge into your e
 }
 ```
 
-Restart OpenCode. OpenCode installs the package from npm into `~/.cache/opencode/node_modules/`.
+Restart OpenCode.
 
 ## Alternatives
 
@@ -33,19 +33,15 @@ Several OpenCode plugins prevent sleep while the agent is busy. Pick by platform
 | **This plugin** | [`opencode-suspend-inhibitor`](https://www.npmjs.com/package/opencode-suspend-inhibitor) · [GitHub](https://github.com/mscurtescu/opencode-suspend-inhibitor) | Linux + GNOME | `gnome-session-inhibit` (`suspend:idle`) | Multi-instance via session files; `--app-id ai.opencode.desktop` |
 | [opencode-sleep-inhibitor](https://www.npmjs.com/package/opencode-sleep-inhibitor) | [`opencode-sleep-inhibitor`](https://www.npmjs.com/package/opencode-sleep-inhibitor) · [GitHub](https://github.com/jvalduvieco/opencode_sleep_inhibitor_plugin) | Linux (systemd), macOS | `systemd-inhibit` / `caffeinate -dis` | Cross-platform; treats any `status.type !== "idle"` as active |
 | [opencode-wakelock](https://github.com/IgnisDa/opencode-wakelock) | [`opencode-wakelock`](https://www.npmjs.com/package/opencode-wakelock) · [GitHub](https://github.com/IgnisDa/opencode-wakelock) | macOS only | `caffeinate -i` | Multi-instance via session files |
-| [opencode-session-guard](https://www.npmjs.com/package/opencode-session-guard) | [`opencode-session-guard`](https://www.npmjs.com/package/opencode-session-guard) · [GitHub](https://github.com/feanor5555/opencode-session-guard) | All | Token limits | Unrelated — enforces context/token thresholds, not power management |
-
-**Choose this plugin** if you run GNOME on Linux and want suspend/idle inhibition via the session manager (visible in `gnome-session-inhibit --list`). **Choose [opencode-sleep-inhibitor](https://github.com/jvalduvieco/opencode_sleep_inhibitor_plugin)** for systemd-based Linux or a single cross-platform package. **Choose [opencode-wakelock](https://github.com/IgnisDa/opencode-wakelock)** on macOS.
 
 ## Platform support
 
-| Platform | Status | Alternative |
-|----------|--------|-------------|
+| Platform                      | Status | Alternative |
+|-------------------------------|--------|-------------|
 | Linux + GNOME Session Manager | Supported | — |
-| Linux (systemd, non-GNOME) | Not supported | [opencode-sleep-inhibitor](https://github.com/jvalduvieco/opencode_sleep_inhibitor_plugin) |
-| Linux (no `gnome-session-inhibit`) | Loads, no-op + one log warning | — |
-| macOS | Not supported | [opencode-wakelock](https://github.com/IgnisDa/opencode-wakelock) or [opencode-sleep-inhibitor](https://github.com/jvalduvieco/opencode_sleep_inhibitor_plugin) |
-| Windows | Not supported | — |
+| Linux + systemd (non-GNOME)   | Not supported | [opencode-sleep-inhibitor](https://github.com/jvalduvieco/opencode_sleep_inhibitor_plugin) |
+| macOS                         | Not supported | [opencode-wakelock](https://github.com/IgnisDa/opencode-wakelock) or [opencode-sleep-inhibitor](https://github.com/jvalduvieco/opencode_sleep_inhibitor_plugin) |
+| Windows                       | Not supported | — |
 
 ## Requirements
 
@@ -108,7 +104,9 @@ Requires [mise](https://mise.jdx.dev/) (`mise install` pins `task`, `bun`, `bd`)
 task              # list tasks
 task install      # bun install
 task typecheck    # tsc --noEmit
-task test         # smoke tests
+task test:unit    # unit tests (bun:test, headless-CI friendly)
+task test:smoke   # smoke tests (typecheck, session registry, gnome-session-inhibit)
+task test         # unit + smoke tests
 task beads:list       # bd list --flat (one line per issue, with type)
 task beads:list:tree  # bd list (hierarchical tree)
 task beads:ready      # bd ready
