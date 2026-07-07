@@ -85,7 +85,7 @@ Session state is tracked via files in `/tmp/opencode-suspend-inhibitor/sessions/
 
 ## Development
 
-See [DEVELOPMENT.md](DEVELOPMENT.md) for project setup, testing, build workflow, issue tracking (beads), and AI agent conventions.
+See [DEVELOPMENT.md](DEVELOPMENT.md) for project setup, testing, build workflow, issue tracking (beads), and AI agent conventions. See [CHANGELOG.md](CHANGELOG.md) for release history.
 
 ## Related
 
