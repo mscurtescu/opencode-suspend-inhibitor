@@ -244,7 +244,27 @@ On startup you should see `Plugin initialized` with `available=true`. If `gnome-
 
 **Session files while busy:** `/tmp/opencode-suspend-inhibitor/sessions/`
 
-**Inhibitor stuck after a crash:** Restart OpenCode (startup cleanup prunes stale sessions) or remove orphaned files under `/tmp/opencode-suspend-inhibitor/sessions/` and run `gnome-session-inhibit --list` again.
+**Orphaned inhibitors after crashes/restarts:** If OpenCode was killed by a signal (SIGINT/SIGTERM/SIGHUP) rather than exiting cleanly, `gnome-session-inhibit` processes can be left running. Check for orphans:
+
+```bash
+gnome-session-inhibit --list | grep "ai.opencode"
+pgrep -f "gnome-session-inhibit.*ai.opencode"
+```
+
+If you see multiple entries when no session is busy (or more than one when one is), kill the orphans:
+
+```bash
+# kill all inhibitors started by this plugin
+pkill -TERM -f "gnome-session-inhibit.*ai.opencode"
+
+# then restart OpenCode — it will start a fresh inhibitor when a session goes busy
+```
+
+Also remove stale session files so `startupCleanup` doesn't find dead PIDs:
+
+```bash
+rm -rf /tmp/opencode-suspend-inhibitor/sessions/
+```
 
 ## Development tasks
 
