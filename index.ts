@@ -65,7 +65,11 @@ export const SleepInhibitorPlugin: Plugin = async ({ client }) => {
     sessionIDs: activeOnStartup,
   });
 
-  process.on("exit", () => inhibitor.stopInhibitorOnExit());
+  const cleanup = () => inhibitor.stopInhibitorOnExit();
+  process.on("exit", cleanup);
+  process.once("SIGINT", cleanup);
+  process.once("SIGTERM", cleanup);
+  process.once("SIGHUP", cleanup);
 
   const sync = async (sessionID: string | undefined, action: "acquire" | "release") => {
     if (!sessionID) {
