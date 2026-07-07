@@ -247,24 +247,18 @@ On startup you should see `Plugin initialized` with `available=true`. If `gnome-
 **Orphaned inhibitors after crashes/restarts:** If OpenCode was killed by a signal (SIGINT/SIGTERM/SIGHUP) rather than exiting cleanly, `gnome-session-inhibit` processes can be left running. Check for orphans:
 
 ```bash
-gnome-session-inhibit --list | grep "ai.opencode"
-pgrep -f "gnome-session-inhibit.*ai.opencode"
+task gsi:list       # all active inhibitors (system-wide)
+task gsi:orphans    # plugin inhibitor processes (PID + args)
+task gsi:sessions   # session files and their stored PIDs
 ```
 
-If you see multiple entries when no session is busy (or more than one when one is), kill the orphans:
+If you see multiple entries when no session is busy (or more than one when one is), reset:
 
 ```bash
-# kill all inhibitors started by this plugin
-pkill -TERM -f "gnome-session-inhibit.*ai.opencode"
-
-# then restart OpenCode — it will start a fresh inhibitor when a session goes busy
+task gsi:reset      # kill orphans, clear session files, remove pid file
 ```
 
-Also remove stale session files so `startupCleanup` doesn't find dead PIDs:
-
-```bash
-rm -rf /tmp/opencode-suspend-inhibitor/sessions/
-```
+Then restart OpenCode — it will start a fresh inhibitor when a session goes busy.
 
 ## Development tasks
 
@@ -286,6 +280,11 @@ task container:run    # shell in dev container (repo bind-mounted)
 task container:verify # verify container + plugin config
 task bdui:start   # beads-ui at http://127.0.0.1:3000
 task bdui:stop    # stop beads-ui
+task gsi:list     # list all active gnome-session-inhibit inhibitors
+task gsi:orphans  # show plugin inhibitor processes (PID + args)
+task gsi:sessions # show session files and their stored PIDs
+task gsi:kill     # kill all plugin gnome-session-inhibit processes
+task gsi:reset    # full reset: kill orphans, clear session files, remove pid file
 ```
 
 ## Issue tracking (beads)

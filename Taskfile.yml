@@ -82,3 +82,39 @@ tasks:
     desc: Stop beads-ui web dashboard
     cmds:
       - bdui stop
+
+  gsi:list:
+    desc: List all active gnome-session-inhibit inhibitors
+    cmds:
+      - gnome-session-inhibit --list
+
+  gsi:orphans:
+    desc: Show plugin gnome-session-inhibit processes (PID + args)
+    cmds:
+      - pgrep -af "gnome-session-inhibit.*ai.opencode" || echo "(none)"
+
+  gsi:sessions:
+    desc: Show session files and their stored PIDs
+    cmds:
+      - |
+        DIR=/tmp/opencode-suspend-inhibitor/sessions
+        if [ ! -d "$DIR" ] || [ -z "$(ls -A "$DIR" 2>/dev/null)" ]; then
+          echo "(no session files)"
+        else
+          for f in "$DIR"/*; do
+            echo "$(basename "$f") -> $(cat "$f")"
+          done
+        fi
+
+  gsi:kill:
+    desc: Kill all plugin gnome-session-inhibit processes
+    cmds:
+      - pkill -TERM -f "gnome-session-inhibit.*ai.opencode" && echo "killed" || echo "(none running)"
+
+  gsi:reset:
+    desc: "Full reset: kill orphans, clear session files, remove pid file"
+    deps: [gsi:kill]
+    cmds:
+      - rm -rf /tmp/opencode-suspend-inhibitor/sessions/
+      - rm -f /tmp/opencode-suspend-inhibitor/gnome-session-inhibit.pid
+      - echo "reset complete"
