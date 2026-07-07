@@ -83,10 +83,16 @@ tasks:
     cmds:
       - bdui stop
 
-  gsi:list:
+  gsi:list:all:
     desc: List all active gnome-session-inhibit inhibitors
+    aliases: [gsi:list]
     cmds:
       - gnome-session-inhibit --list
+
+  gsi:list:plugin:
+    desc: List plugin inhibitors only (ai.opencode.desktop)
+    cmds:
+      - gnome-session-inhibit --list 2>/dev/null | grep "ai.opencode" || echo "(none)"
 
   gsi:orphans:
     desc: Show plugin gnome-session-inhibit processes (PID + args)

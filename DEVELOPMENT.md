@@ -280,7 +280,8 @@ task container:run    # shell in dev container (repo bind-mounted)
 task container:verify # verify container + plugin config
 task bdui:start   # beads-ui at http://127.0.0.1:3000
 task bdui:stop    # stop beads-ui
-task gsi:list     # list all active gnome-session-inhibit inhibitors
+task gsi:list:all   # list all active gnome-session-inhibit inhibitors
+task gsi:list:plugin # list plugin inhibitors only (ai.opencode.desktop)
 task gsi:orphans  # show plugin inhibitor processes (PID + args)
 task gsi:sessions # show session files and their stored PIDs
 task gsi:kill     # kill all plugin gnome-session-inhibit processes
