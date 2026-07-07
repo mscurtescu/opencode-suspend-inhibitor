@@ -1,10 +1,8 @@
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 
-import { isProcessAlive, TMP_DIR } from "../sessions";
+import { TMP_DIR } from "../sessions";
 
 export const BACKEND = "gnome" as const;
-
-const INHIBITOR_PID_FILE = `${TMP_DIR}/gnome-session-inhibit.pid`;
 
 const INHIBITOR_ARGS = [
   "--inhibit-only",
@@ -16,107 +14,141 @@ const INHIBITOR_ARGS = [
   "ai.opencode.desktop",
 ] as const;
 
-let availability: boolean | null = null;
-let startPromise: Promise<void> | null = null;
+type SpawnOpts = { stdout?: "ignore"; stderr?: "ignore" };
+type SpawnResult = { pid: number; exited: Promise<number> };
+type SpawnFn = (cmd: string[], opts?: SpawnOpts) => SpawnResult;
+type KillFn = (pid: number, signal?: NodeJS.Signals | number) => boolean;
 
-export function isLinux(): boolean {
-  return process.platform === "linux";
-}
+const defaultSpawn: SpawnFn = (cmd, opts) =>
+  Bun.spawn(cmd, opts) as unknown as SpawnResult;
 
-export async function resolveAvailability(): Promise<boolean> {
-  if (!isLinux()) {
-    availability = false;
-    return false;
+export class GnomeInhibitor {
+  private availability: boolean | null = null;
+  private startPromise: Promise<void> | null = null;
+
+  constructor(
+    private readonly spawnProcess: SpawnFn = defaultSpawn,
+    private readonly killProcess: KillFn = process.kill,
+  ) {}
+
+  isLinux(): boolean {
+    return process.platform === "linux";
   }
 
-  if (availability !== null) return availability;
+  async resolveAvailability(): Promise<boolean> {
+    if (!this.isLinux()) {
+      this.availability = false;
+      return false;
+    }
 
-  try {
-    const proc = Bun.spawn(["which", "gnome-session-inhibit"], {
-      stdout: "ignore",
-      stderr: "ignore",
+    if (this.availability !== null) return this.availability;
+
+    try {
+      const proc = this.spawnProcess(["which", "gnome-session-inhibit"], {
+        stdout: "ignore",
+        stderr: "ignore",
+      });
+      this.availability = (await proc.exited) === 0;
+    } catch {
+      this.availability = false;
+    }
+
+    return this.availability;
+  }
+
+  private inhibitorPidFile(): string {
+    return `${TMP_DIR}/gnome-session-inhibit.pid`;
+  }
+
+  private isProcessAlive(pid: number): boolean {
+    try {
+      this.killProcess(pid, 0);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private isInhibitorRunning(): boolean {
+    const pidFile = this.inhibitorPidFile();
+    if (!existsSync(pidFile)) return false;
+
+    try {
+      const pid = Number.parseInt(readFileSync(pidFile, "utf8").trim(), 10);
+      if (this.isProcessAlive(pid)) return true;
+      unlinkSync(pidFile);
+      return false;
+    } catch {
+      return false;
+    }
+  }
+
+  private async startInhibitor(): Promise<void> {
+    if (this.startPromise) return this.startPromise;
+
+    this.startPromise = (async () => {
+      if (this.isInhibitorRunning()) return;
+
+      const proc = this.spawnProcess(
+        ["gnome-session-inhibit", ...INHIBITOR_ARGS],
+        {
+          stdout: "ignore",
+          stderr: "ignore",
+        },
+      );
+
+      writeFileSync(this.inhibitorPidFile(), String(proc.pid));
+
+      void proc.exited.then(() => {
+        try {
+          const pidFile = this.inhibitorPidFile();
+          if (!existsSync(pidFile)) return;
+          const recorded = Number.parseInt(
+            readFileSync(pidFile, "utf8").trim(),
+            10,
+          );
+          if (recorded === proc.pid) unlinkSync(pidFile);
+        } catch {
+          // ignore cleanup errors
+        }
+      });
+    })().finally(() => {
+      this.startPromise = null;
     });
-    availability = (await proc.exited) === 0;
-  } catch {
-    availability = false;
+
+    return this.startPromise;
   }
 
-  return availability;
-}
+  private stopInhibitor(): void {
+    const pidFile = this.inhibitorPidFile();
+    if (!existsSync(pidFile)) return;
 
-function isInhibitorRunning(): boolean {
-  if (!existsSync(INHIBITOR_PID_FILE)) return false;
+    try {
+      const pid = Number.parseInt(readFileSync(pidFile, "utf8").trim(), 10);
+      this.killProcess(pid, "SIGTERM");
+    } catch {
+      // already stopped
+    }
 
-  try {
-    const pid = Number.parseInt(readFileSync(INHIBITOR_PID_FILE, "utf8").trim(), 10);
-    if (isProcessAlive(pid)) return true;
-    unlinkSync(INHIBITOR_PID_FILE);
-    return false;
-  } catch {
-    return false;
-  }
-}
-
-async function startInhibitor(): Promise<void> {
-  if (startPromise) return startPromise;
-
-  startPromise = (async () => {
-    if (isInhibitorRunning()) return;
-
-    const proc = Bun.spawn(["gnome-session-inhibit", ...INHIBITOR_ARGS], {
-      stdout: "ignore",
-      stderr: "ignore",
-    });
-
-    writeFileSync(INHIBITOR_PID_FILE, String(proc.pid));
-
-    void proc.exited.then(() => {
-      try {
-        if (!existsSync(INHIBITOR_PID_FILE)) return;
-        const recorded = Number.parseInt(
-          readFileSync(INHIBITOR_PID_FILE, "utf8").trim(),
-          10,
-        );
-        if (recorded === proc.pid) unlinkSync(INHIBITOR_PID_FILE);
-      } catch {
-        // ignore cleanup errors
-      }
-    });
-  })().finally(() => {
-    startPromise = null;
-  });
-
-  return startPromise;
-}
-
-function stopInhibitor(): void {
-  if (!existsSync(INHIBITOR_PID_FILE)) return;
-
-  try {
-    const pid = Number.parseInt(readFileSync(INHIBITOR_PID_FILE, "utf8").trim(), 10);
-    process.kill(pid, "SIGTERM");
-  } catch {
-    // already stopped
+    try {
+      unlinkSync(pidFile);
+    } catch {
+      // already removed
+    }
   }
 
-  try {
-    unlinkSync(INHIBITOR_PID_FILE);
-  } catch {
-    // already removed
-  }
-}
+  async syncInhibitor(activeSessionCount: number): Promise<void> {
+    if (!(await this.resolveAvailability())) return;
 
-export async function syncInhibitor(activeSessionCount: number): Promise<void> {
-  if (!(await resolveAvailability())) return;
+    if (activeSessionCount > 0) {
+      await this.startInhibitor();
+      return;
+    }
 
-  if (activeSessionCount > 0) {
-    await startInhibitor();
-    return;
+    this.stopInhibitor();
   }
 
-  stopInhibitor();
-}
-
-export function stopInhibitorOnExit(): void {
-  stopInhibitor();
+  stopInhibitorOnExit(): void {
+    this.stopInhibitor();
+  }
 }

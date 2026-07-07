@@ -16,8 +16,14 @@ import {
  * session files remain for live PIDs. Stale files are pruned when the
  * recorded PID is no longer running.
  */
-export const TMP_DIR = "/tmp/opencode-suspend-inhibitor";
-export const SESSIONS_DIR = `${TMP_DIR}/sessions`;
+export let TMP_DIR = "/tmp/opencode-suspend-inhibitor";
+export let SESSIONS_DIR = `${TMP_DIR}/sessions`;
+
+/** Test-only: redirect session storage to a temp dir. */
+export function _setBaseDir(dir: string): void {
+  TMP_DIR = dir;
+  SESSIONS_DIR = `${dir}/sessions`;
+}
 
 export function isProcessAlive(pid: number): boolean {
   try {

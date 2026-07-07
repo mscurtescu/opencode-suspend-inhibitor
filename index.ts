@@ -1,12 +1,6 @@
 import type { Plugin } from "@opencode-ai/plugin";
 
-import {
-  BACKEND,
-  isLinux,
-  resolveAvailability,
-  stopInhibitorOnExit,
-  syncInhibitor,
-} from "./src/backends/gnome";
+import { BACKEND, GnomeInhibitor } from "./src/backends/gnome";
 import {
   acquire,
   getActiveSessions,
@@ -49,18 +43,20 @@ export const SleepInhibitorPlugin: Plugin = async ({ client }) => {
     return { event: async () => {} };
   };
 
-  if (!isLinux()) {
+  const inhibitor = new GnomeInhibitor();
+
+  if (!inhibitor.isLinux()) {
     return noOp("Plugin inactive on non-Linux platform", {
       platform: process.platform,
     });
   }
 
-  if (!(await resolveAvailability())) {
+  if (!(await inhibitor.resolveAvailability())) {
     return noOp("gnome-session-inhibit not available; plugin inactive");
   }
 
   const activeOnStartup = startupCleanup();
-  await syncInhibitor(activeOnStartup.length);
+  await inhibitor.syncInhibitor(activeOnStartup.length);
 
   void log("info", "Plugin initialized", {
     available: true,
@@ -69,7 +65,7 @@ export const SleepInhibitorPlugin: Plugin = async ({ client }) => {
     sessionIDs: activeOnStartup,
   });
 
-  process.on("exit", stopInhibitorOnExit);
+  process.on("exit", () => inhibitor.stopInhibitorOnExit());
 
   const sync = async (sessionID: string | undefined, action: "acquire" | "release") => {
     if (!sessionID) {
@@ -81,7 +77,7 @@ export const SleepInhibitorPlugin: Plugin = async ({ client }) => {
     else release(sessionID);
 
     const active = getActiveSessions();
-    await syncInhibitor(active.length);
+    await inhibitor.syncInhibitor(active.length);
 
     void log("info", action === "acquire" ? "Acquired session" : "Released session", {
       sessionID,
