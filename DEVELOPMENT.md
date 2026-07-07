@@ -1,19 +1,36 @@
-# Testing opencode-suspend-inhibitor
+# Development
 
-## Unit tests
+## Project setup
+
+Prerequisites: [mise](https://mise.jdx.dev/) pins `task`, `bun`, and `bd` (beads).
+
+```bash
+git clone <repo-url>
+cd opencode-suspend-inhibitor
+mise install          # pins task, bun, bd
+bun install           # dev dependencies
+```
+
+Typecheck:
+
+```bash
+task typecheck        # bunx tsc --noEmit
+```
+
+## Testing
+
+### Unit tests
 
 Headless unit tests for plugin core logic — no `gnome-session-inhibit` binary, display, or real `/tmp` writes required. CI-friendly.
 
 ```bash
-task test:unit     # via Taskfile
-bun test           # directly
+task test:unit        # via Taskfile
+bun test              # directly
 ```
 
 Covers: session registry (acquire/release, stale-PID pruning, `startupCleanup`), gnome backend (`isLinux`, `resolveAvailability` + caching, `syncInhibitor` start/stop/dedup, pid-file lifecycle), plugin entry (no-op branches, init logging, event routing for `session.status`/`session.idle`/`session.error`/missing sessionID).
 
-## Automated smoke test
-
-From the repo root (`mise install` provides `task`, `bun`, `bd`):
+### Smoke tests
 
 ```bash
 task test:smoke
@@ -28,7 +45,7 @@ chmod +x scripts/smoke-test.sh
 
 Covers: TypeScript typecheck, `gnome-session-inhibit` on PATH, session registry acquire/release.
 
-## Run both
+### Run both
 
 ```bash
 task test
@@ -36,7 +53,7 @@ task test
 
 Runs unit tests first, then smoke tests.
 
-## Dev container (integration test environment)
+### Dev container (integration test environment)
 
 Reproducible Linux environment for integration testing and Docker-based development. One Dockerfile per profile (`docker/Dockerfile.<profile>`); default is Ubuntu 24.04 (`ubuntu2404`).
 
@@ -59,7 +76,7 @@ Inside the container:
 
 Add another distro: copy `docker/Dockerfile.ubuntu2404` (see `docker/README.md`).
 
-## Dev plugin (`file://`) vs published npm
+### Dev plugin (`file://`) vs published npm
 
 OpenCode loads plugins from `~/.config/opencode/opencode.jsonc`. Two modes:
 
@@ -70,7 +87,7 @@ OpenCode loads plugins from `~/.config/opencode/opencode.jsonc`. Two modes:
 
 Use **one** entry at a time — do not list both.
 
-### `opencode plugin` (npm only)
+#### `opencode plugin` (npm only)
 
 ```bash
 opencode plugin opencode-suspend-inhibitor      # install + add to project opencode.jsonc
@@ -82,7 +99,7 @@ This command installs from **npm** and writes the package name into config. It d
 
 Running `opencode plugin …` while testing a `file://` entry will replace it with the npm package name.
 
-### Switch to local clone
+#### Switch to local clone
 
 Edit `~/.config/opencode/opencode.jsonc`:
 
@@ -97,11 +114,11 @@ Edit `~/.config/opencode/opencode.jsonc`:
 
 Use the absolute path to your clone (three slashes after `file:`). Example:
 
-`file:///home/marius/Work/iden2/github.com/mscurtescu/opencode-sleep-inhibitor`
+`file:///home/marius/Work/iden2/github.com/mscurtescu/opencode-suspend-inhibitor`
 
 **Restart OpenCode** after changing config. Plugins load at startup only; edit `index.ts`, restart, re-test.
 
-### Switch back to published npm
+#### Switch back to published npm
 
 Either edit config:
 
@@ -116,7 +133,7 @@ Or run `opencode plugin opencode-suspend-inhibitor` (or `-f` to refresh the cach
 
 Restart OpenCode. It uses the cached npm install from `~/.cache/opencode/node_modules/`.
 
-### Updating after npm publish
+#### Updating after npm publish
 
 OpenCode **caches** npm plugins under `~/.cache/opencode/packages/`. The resolved version is pinned in that cache (e.g. `"opencode-suspend-inhibitor": "0.0.1"`). **Restart alone does not check npm for a newer version.**
 
@@ -148,7 +165,7 @@ Check the `dependencies` version matches what you published.
 
 While developing unreleased changes, use the **`file://` config** above — no publish or `-f` needed; restart after edits.
 
-### Verify which plugin loaded
+#### Verify which plugin loaded
 
 ```bash
 opencode debug info
@@ -157,11 +174,11 @@ grep 'plugin=opencode-suspend-inhibitor' ~/.local/share/opencode/log/opencode.lo
 
 After code changes on `file://`, confirm new log behavior (e.g. `plugin=opencode-suspend-inhibitor` on every line) before assuming the clone is active.
 
-## OpenCode integration (manual)
+### OpenCode integration (manual)
 
 Requires the **dev `file://` config** above (or publish to npm and use the package name). Restart OpenCode after any config change.
 
-### 1. Busy → inhibitor active
+#### 1. Busy → inhibitor active
 
 1. Start an agent session and trigger busy state (run a task).
 2. In a terminal:
@@ -172,12 +189,12 @@ Requires the **dev `file://` config** above (or publish to npm and use the packa
 
 3. Expect an entry with app-id `ai.opencode.desktop` and reason `OpenCode Agent is actively working`.
 
-### 2. Idle → inhibitor released
+#### 2. Idle → inhibitor released
 
 1. Wait for session idle (or cancel/stop the task).
 2. Run `gnome-session-inhibit --list` again — OpenCode inhibitor should be gone.
 
-### 3. Multi-instance
+#### 3. Multi-instance
 
 1. Open two OpenCode instances (or two sessions busy at once).
 2. Confirm inhibitor stays active while either is busy.
@@ -186,7 +203,7 @@ Requires the **dev `file://` config** above (or publish to npm and use the packa
 
 Session files (while busy): `/tmp/opencode-suspend-inhibitor/sessions/`
 
-### 4. Missing binary (no-op)
+#### 4. Missing binary (no-op)
 
 Temporarily hide the binary, restart OpenCode, trigger busy:
 
@@ -198,7 +215,7 @@ sudo mv /usr/bin/gnome-session-inhibit.bak /usr/bin/gnome-session-inhibit
 
 No inhibitor should appear in `gnome-session-inhibit --list`.
 
-## Logs
+### Logs
 
 OpenCode flattens `extra` fields onto log lines. Every entry from this plugin includes `plugin=opencode-suspend-inhibitor` and `backend=gnome`:
 
@@ -206,3 +223,127 @@ OpenCode flattens `extra` fields onto log lines. Every entry from this plugin in
 grep 'plugin=opencode-suspend-inhibitor' ~/.local/share/opencode/log/opencode.log
 grep 'Plugin initialized' ~/.local/share/opencode/log/opencode.log
 ```
+
+### Troubleshooting
+
+**Check whether an inhibitor is active:**
+
+```bash
+gnome-session-inhibit --list
+```
+
+While an agent is busy, expect an entry with app-id `ai.opencode.desktop` and reason `OpenCode Agent is actively working`.
+
+**Plugin logs:** OpenCode flattens `extra` fields onto log lines (`plugin=opencode-suspend-inhibitor`, `backend=gnome`). Filter:
+
+```bash
+grep 'plugin=opencode-suspend-inhibitor' ~/.local/share/opencode/log/opencode.log
+```
+
+On startup you should see `Plugin initialized` with `available=true`. If `gnome-session-inhibit` is missing, you get a single warning with `available=false`.
+
+**Session files while busy:** `/tmp/opencode-suspend-inhibitor/sessions/`
+
+**Inhibitor stuck after a crash:** Restart OpenCode (startup cleanup prunes stale sessions) or remove orphaned files under `/tmp/opencode-suspend-inhibitor/sessions/` and run `gnome-session-inhibit --list` again.
+
+## Development tasks
+
+Requires [mise](https://mise.jdx.dev/) (`mise install` pins `task`, `bun`, `bd`):
+
+```bash
+task              # list tasks
+task install      # bun install
+task typecheck    # tsc --noEmit
+task test:unit    # unit tests (bun:test, headless-CI friendly)
+task test:smoke   # smoke tests (typecheck, session registry, gnome-session-inhibit)
+task test         # unit + smoke tests
+task beads:list       # bd list --flat (one line per issue, with type)
+task beads:list:tree  # bd list (hierarchical tree)
+task beads:ready      # bd ready
+task beads:push       # bd dolt push
+task container:build  # Docker dev image for integration tests
+task container:run    # shell in dev container (repo bind-mounted)
+task container:verify # verify container + plugin config
+task bdui:start   # beads-ui at http://127.0.0.1:3000
+task bdui:stop    # stop beads-ui
+```
+
+## Issue tracking (beads)
+
+This project uses [bd (beads)](https://github.com/gastownhall/beads) for issue tracking — a lightweight, dependency-aware tracker backed by a local Dolt database with git-native sync.
+
+### Architecture
+
+- **Issues live in a local Dolt database** embedded under `.beads/embeddeddolt/` (not in JSONL files, not in a remote service).
+- **Cross-machine sync** uses `bd dolt push` / `bd dolt pull`, which writes to `refs/dolt/data` on your git remote — a namespace **separate** from `refs/heads/*` where your code lives. This means beads data syncs through the same git remote without touching your branch history.
+- **`.beads/issues.jsonl` and `.beads/interactions.jsonl` are passive exports** — gitignored, not the wire protocol. They may exist locally for viewers (e.g. `bdui`) but are never committed. Export is off (`export.auto: false` in `.beads/config.yaml`).
+- **Auto-push** is enabled for solo use (`dolt.auto-push: true`, 5-minute debounce). After any beads write, bd auto-commits to Dolt history and pushes to the remote within 5 minutes. Run `bd dolt push` manually for immediate sync.
+- **Sync remote** is configured in `.beads/config.yaml` (`sync.remote` → GitHub origin).
+
+See [SYNC_CONCEPTS.md](https://github.com/gastownhall/beads/blob/main/docs/SYNC_CONCEPTS.md) for the one-screen overview and anti-patterns (don't treat JSONL as source of truth; don't `bd import` during normal operation).
+
+### Fresh clone bootstrap
+
+After `git clone`, the Dolt database is not present. Pull it from the remote:
+
+```bash
+git clone <repo-url>
+cd opencode-suspend-inhibitor
+mise install          # pins bd among other tools
+bd dolt pull          # fetch issue database from refs/dolt/data
+```
+
+Verify:
+
+```bash
+bd list               # should show all issues
+bd ready              # should show unblocked work
+```
+
+### Daily commands
+
+```bash
+bd ready              # find unblocked issues ready to work on
+bd show <id>          # view issue details
+bd list               # list all issues (hierarchical tree)
+bd list --flat        # one line per issue, with type
+bd update <id> --claim   # atomically claim an issue
+bd create "Title" --description="..." -t bug|feature|task -p 0-4
+bd close <id> --reason "Done"
+bd comment <id> "Update text"
+bd dolt push          # push beads data to remote (manual; auto-push also runs)
+```
+
+### Git workflow
+
+**Never commit `.beads/*.jsonl`** — these are gitignored passive exports, not the source of truth. Sync happens via `bd dolt push` (writes to `refs/dolt/data`).
+
+When working on an issue:
+
+1. Implement and verify (tests, typecheck)
+2. `bd close <id> --reason "..."` (and any `bd comment` / `bd update`)
+3. Beads auto-pushes to remote after writes (5m debounce). Run `bd dolt push` manually if you need immediate sync before another machine pulls.
+4. Stage and commit **code/config only** (not `.beads/*.jsonl`)
+5. `git push`
+
+### Issue types and priorities
+
+| Type | Use for |
+|------|---------|
+| `bug` | Something broken |
+| `feature` | New functionality |
+| `task` | Work item (tests, docs, refactoring) |
+| `epic` | Large feature with subtasks |
+| `chore` | Maintenance (dependencies, tooling) |
+
+| Priority | Meaning |
+|----------|---------|
+| 0 | Critical (security, data loss, broken builds) |
+| 1 | High (major features, important bugs) |
+| 2 | Medium (default) |
+| 3 | Low (polish, optimization) |
+| 4 | Backlog (future ideas) |
+
+## AI agents
+
+AI agents follow [AGENTS.md](AGENTS.md) (all agents) and [CLAUDE.md](CLAUDE.md) (Claude-specific) for beads rules, git workflow, non-interactive shell conventions, and session completion protocol.
