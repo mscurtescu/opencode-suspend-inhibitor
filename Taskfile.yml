@@ -16,10 +16,19 @@ tasks:
     cmds:
       - bunx tsc --noEmit
 
-  test:
+  test:unit:
+    desc: Run unit tests (bun:test, headless-CI friendly)
+    cmds:
+      - bun test
+
+  test:smoke:
     desc: Smoke test (typecheck, session registry, gnome-session-inhibit)
     cmds:
       - ./scripts/smoke-test.sh
+
+  test:
+    desc: Run unit tests then smoke tests
+    deps: [test:unit, test:smoke]
 
   container:build:
     desc: Build dev container image (PROFILE=ubuntu2404)

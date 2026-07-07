@@ -23,6 +23,11 @@
   "engines": {
     "opencode": ">=1.14.0"
   },
+  "scripts": {
+    "test": "bun test",
+    "test:smoke": "./scripts/smoke-test.sh",
+    "typecheck": "tsc --noEmit"
+  },
   "keywords": [
     "opencode",
     "plugin",

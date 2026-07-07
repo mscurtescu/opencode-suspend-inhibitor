@@ -1,11 +1,22 @@
 # Testing opencode-suspend-inhibitor
 
+## Unit tests
+
+Headless unit tests for plugin core logic — no `gnome-session-inhibit` binary, display, or real `/tmp` writes required. CI-friendly.
+
+```bash
+task test:unit     # via Taskfile
+bun test           # directly
+```
+
+Covers: session registry (acquire/release, stale-PID pruning, `startupCleanup`), gnome backend (`isLinux`, `resolveAvailability` + caching, `syncInhibitor` start/stop/dedup, pid-file lifecycle), plugin entry (no-op branches, init logging, event routing for `session.status`/`session.idle`/`session.error`/missing sessionID).
+
 ## Automated smoke test
 
 From the repo root (`mise install` provides `task`, `bun`, `bd`):
 
 ```bash
-task test
+task test:smoke
 ```
 
 Or directly:
@@ -16,6 +27,14 @@ chmod +x scripts/smoke-test.sh
 ```
 
 Covers: TypeScript typecheck, `gnome-session-inhibit` on PATH, session registry acquire/release.
+
+## Run both
+
+```bash
+task test
+```
+
+Runs unit tests first, then smoke tests.
 
 ## Dev container (integration test environment)
 
