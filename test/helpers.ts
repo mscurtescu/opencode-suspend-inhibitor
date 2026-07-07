@@ -1,4 +1,3 @@
-import { EventEmitter } from "node:events";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -24,43 +23,71 @@ export async function flush(): Promise<void> {
   await Promise.resolve();
 }
 
-/** Fake child process for spawn mocking. Emits "spawn" on next microtask. */
-export class FakeChild extends EventEmitter {
+/** Fake child process with a controllable `exited` promise. */
+export class FakeChild {
   readonly pid: number;
-  readonly killCalls: string[] = [];
-  private readonly exitCode: number | null;
-  private exited = false;
+  readonly cmd: string[];
+  readonly exited: Promise<number>;
+  private resolveExit!: (code: number) => void;
 
-  constructor(pid: number, exitCode: number | null = 0) {
-    super();
+  constructor(pid: number, cmd: string[], autoExitCode?: number) {
     this.pid = pid;
-    this.exitCode = exitCode;
-    queueMicrotask(() => {
-      this.emit("spawn");
-      if (!this.exited) {
-        this.exited = true;
-        this.emit("exit", this.exitCode, null);
+    this.cmd = cmd;
+    this.exited = new Promise((resolve) => {
+      this.resolveExit = resolve;
+      if (autoExitCode !== undefined) {
+        queueMicrotask(() => resolve(autoExitCode));
       }
     });
   }
 
-  kill(signal: string): boolean {
-    this.killCalls.push(signal);
-    return true;
+  fakeExit(code: number = 0): void {
+    this.resolveExit(code);
   }
 }
 
-/** Fake spawn function that returns FakeChild instances. */
+/** Fake spawn that records calls and returns FakeChild instances. */
 export class FakeSpawn {
   readonly calls: { cmd: string[]; pid: number }[] = [];
+  readonly children: FakeChild[] = [];
   private pidCounter = 10000;
 
-  constructor(private readonly exitCode: number = 0) {}
+  constructor(private readonly whichExitCode: number = 0) {}
 
-  spawn = (cmd: string[]): FakeChild => {
+  spawn = (cmd: string[], _opts?: unknown): FakeChild => {
     const pid = ++this.pidCounter;
     this.calls.push({ cmd, pid });
-    return new FakeChild(pid, this.exitCode);
+    const child =
+      cmd[0] === "which"
+        ? new FakeChild(pid, cmd, this.whichExitCode)
+        : new FakeChild(pid, cmd);
+    this.children.push(child);
+    return child;
+  };
+
+  get inhibitorChild(): FakeChild | undefined {
+    return this.children.find((c) => c.cmd[0] === "gnome-session-inhibit");
+  }
+}
+
+/** Fake process.kill that tracks calls and simulates liveness. */
+export class FakeKill {
+  readonly killCalls: { pid: number; signal: string | number }[] = [];
+  private deadPids = new Set<number>();
+
+  markDead(pid: number): void {
+    this.deadPids.add(pid);
+  }
+
+  kill = (pid: number, signal?: string | number): boolean => {
+    const sig = signal ?? 0;
+    this.killCalls.push({ pid, signal: sig });
+    if (sig === 0) {
+      if (this.deadPids.has(pid)) throw new Error(`kill ESRCH: ${pid}`);
+      return true;
+    }
+    this.deadPids.add(pid);
+    return true;
   };
 }
 
