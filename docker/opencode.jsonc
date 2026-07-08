@@ -1,0 +1,19 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["file:///workspace/opencode-suspend-inhibitor"],
+  "provider": {
+    "test-llm": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Test LLM",
+      "options": {
+        "baseURL": "http://mock-llm:6556/v1",
+        "apiKey": "test"
+      },
+      "models": {
+        "mock": {
+          "name": "Mock"
+        }
+      }
+    }
+  }
+}

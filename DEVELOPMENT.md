@@ -58,11 +58,11 @@ Runs unit tests first, then smoke tests (does not include integration tests — 
 
 ### Integration tests
 
-End-to-end test that loads the plugin via OpenCode with a mock LLM provider, sends a prompt, and asserts the plugin logs the expected lifecycle events (`Plugin initialized`, `Acquired session`, `Released session`).
+End-to-end test that loads the plugin via OpenCode with a mock LLM provider, sends a prompt via the server API, and asserts the plugin logs the expected lifecycle events (`Plugin initialized`, `Acquired session`, `Released session`).
 
-Uses `docker compose` with two containers:
+Uses `docker compose` with two services:
 
-- **dev** — the existing dev container (builds from `docker/Dockerfile.ubuntu2404`), repo bind-mounted
+- **opencode-server** — builds from `docker/Dockerfile.ubuntu2404`, runs `opencode serve` persistently with the plugin + mock provider pre-configured (`docker/opencode.jsonc`). Repo bind-mounted at `/workspace/opencode-suspend-inhibitor`.
 - **mock-llm** — `ghcr.io/dwmkerr/mock-llm` (OpenAI-compatible echo server)
 
 ```bash
@@ -72,17 +72,21 @@ task container:test
 Or directly:
 
 ```bash
-docker compose -f docker/docker-compose.yml up --build --abort-on-container-exit --exit-code-from dev
+docker compose -f docker/docker-compose.yml up -d --build --wait
+./scripts/integration-test.sh
+docker compose -f docker/docker-compose.yml down
 ```
 
 What it does:
 
 1. Docker Compose starts mock-llm first and waits for its health check to pass
-2. The test script creates an OpenCode config with `file://` plugin + mock provider pointing at `http://mock-llm:6556/v1`
-3. Runs `opencode run --auto -m test-llm/mock "ok"`
-4. Checks the output and log file for `Plugin initialized` and `Acquired session` (required) and `Released session` (timing-dependent)
+2. opencode-server starts and waits for both mock-llm and its own health check (`GET /global/health`)
+3. The host-side test script (`scripts/integration-test.sh`) creates a session via `POST /session`
+4. Sends a prompt via `POST /session/:id/prompt_async` (triggers `busy` → `idle` lifecycle)
+5. Polls the session until processing completes (non-zero token count)
+6. Checks the container log file (via `docker compose exec`) for `Plugin initialized`, `Acquired session`, and `Released session`
 
-The `docker compose` command cleans up both containers when the test finishes. Use `--abort-on-container-exit` and `--exit-code-from dev` so the exit code reflects the test result.
+The test script runs on the **host**, not inside the container. Assertions use `docker compose exec` to read logs from the running opencode-server container.
 
 ### Dev container (integration test environment)
 
@@ -101,9 +105,10 @@ task container:test               # integration tests (mock LLM sidecar)
 Inside the container:
 
 - Repo is mounted at `/workspace/opencode-suspend-inhibitor`
-- `~/.config/opencode/opencode.jsonc` points at `file:///workspace/opencode-suspend-inhibitor`
+- `~/.config/opencode/opencode.jsonc` is pre-configured with `file:///workspace/opencode-suspend-inhibitor` plugin and a mock LLM provider (see `docker/opencode.jsonc`)
 - `gnome-session-inhibit` and `opencode` (curl installer) are on `PATH`
 - No Node/npm/Bun in the container — OpenCode bundles what it needs for plugins
+- No entrypoint script — config is baked into the image; the default `CMD` starts `opencode serve`
 
 Add another distro: copy `docker/Dockerfile.ubuntu2404` (see `docker/README.md`).
 

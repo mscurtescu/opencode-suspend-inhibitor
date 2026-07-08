@@ -12,21 +12,25 @@ services:
       retries: 10
       start_period: 10s
 
-  dev:
+  opencode-server:
     build:
       context: .
       dockerfile: Dockerfile.ubuntu2404
+    ports:
+      - "${OPENCODE_PORT:-4096}:4096"
     volumes:
       - ..:/workspace/opencode-suspend-inhibitor:rw
-    environment:
-      - MOCK_LLM_URL=http://mock-llm:6556/v1
-    command:
-      - /workspace/opencode-suspend-inhibitor/scripts/integration-test.sh
     depends_on:
       mock-llm:
         condition: service_healthy
     networks:
       - test-net
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1:4096/global/health"]
+      interval: 5s
+      timeout: 10s
+      retries: 15
+      start_period: 30s
 
 networks:
   test-net:

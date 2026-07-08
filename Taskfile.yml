@@ -47,9 +47,12 @@ tasks:
       - docker run -it --rm -v "$PWD:/workspace/opencode-suspend-inhibitor:rw" -e PLUGIN_DIR=/workspace/opencode-suspend-inhibitor opencode-suspend-inhibitor-dev:${PROFILE:-ubuntu2404}
 
   container:test:
-    desc: Run integration tests (dev container + mock LLM sidecar)
+    desc: Run integration tests (opencode-server + mock LLM sidecar)
     cmds:
-      - docker compose -f docker/docker-compose.yml up --build --abort-on-container-exit --exit-code-from dev
+      - docker compose -f docker/docker-compose.yml up -d --build --wait
+      - ./scripts/integration-test.sh; EXIT_CODE=$?
+      - docker compose -f docker/docker-compose.yml down
+      - exit $EXIT_CODE
 
   beads:ready:
     desc: Show unblocked beads issues
