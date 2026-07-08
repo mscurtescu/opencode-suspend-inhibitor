@@ -60,9 +60,7 @@ tasks:
     desc: Run integration tests (opencode-server + mock LLM sidecar)
     deps: [docker:up]
     cmds:
-      - ./scripts/integration-test.sh; EXIT_CODE=$?
-      - task docker:down
-      - exit $EXIT_CODE
+      - ./scripts/integration-test.sh
 
   beads:ready:
     desc: Show unblocked beads issues
