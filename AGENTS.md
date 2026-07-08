@@ -25,7 +25,9 @@ bd close <id>         # Complete work
 bd dolt push          # Push beads data to remote
 ```
 
-## Git commits require user review
+## Git commits require explicit confirmation
+
+**Never run `git commit`, `git push`, or any git write command without explicit user confirmation — asking then acting without waiting does not count as confirmation.**
 
 **Never run `git commit` without explicit user approval.**
 
