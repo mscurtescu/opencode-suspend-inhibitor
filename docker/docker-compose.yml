@@ -3,6 +3,7 @@ name: osi
 services:
   mock-llm:
     image: ghcr.io/dwmkerr/mock-llm
+    restart: unless-stopped
     networks:
       - test-net
     healthcheck:
@@ -16,6 +17,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.ubuntu2404
+    restart: unless-stopped
     ports:
       - "${OPENCODE_PORT:-4096}:4096"
     volumes:
