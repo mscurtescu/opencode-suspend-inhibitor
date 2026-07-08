@@ -8,7 +8,7 @@ One Dockerfile per profile. The filename is the profile id.
 
 ```bash
 task docker:build
-task container:run
+task docker:shell
 task test:integration
 task docker:up       # start services (detached)
 task docker:down     # stop services

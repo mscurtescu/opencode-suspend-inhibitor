@@ -50,11 +50,11 @@ tasks:
     cmds:
       - docker compose -f docker/docker-compose.yml down
 
-  container:run:
-    desc: Run dev container with repo bind-mounted (interactive shell)
-    deps: [docker:build]
+  docker:shell:
+    desc: Drop into a shell inside the running opencode-server container
+    deps: [docker:up]
     cmds:
-      - docker run -it --rm -v "$PWD:/workspace/opencode-suspend-inhibitor:rw" -e PLUGIN_DIR=/workspace/opencode-suspend-inhibitor opencode-suspend-inhibitor-dev:${PROFILE:-ubuntu2404}
+      - docker compose -f docker/docker-compose.yml exec opencode-server bash
 
   test:integration:
     desc: Run integration tests (opencode-server + mock LLM sidecar)

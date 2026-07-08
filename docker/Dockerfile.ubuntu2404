@@ -1,6 +1,6 @@
 # Ubuntu 24.04 LTS — gnome-session-inhibit via gnome-session-bin
 # Build: task container:build
-# Run:   task container:run
+# Run:   task docker:shell
 
 FROM ubuntu:24.04
 

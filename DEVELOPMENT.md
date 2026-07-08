@@ -96,11 +96,11 @@ Reproducible Linux environment for integration testing and Docker-based developm
 
 ```bash
 task docker:build                 # build image
-task container:run                # interactive shell, repo mounted at /workspace/opencode-suspend-inhibitor
+task docker:shell                 # shell in running opencode-server container
 task test:integration             # integration tests (mock LLM sidecar)
 ```
 
-`container:run` depends on `docker:build`.
+`docker:shell` depends on `docker:up` (starts services first).
 
 Inside the container:
 
@@ -313,7 +313,7 @@ task beads:list:tree  # bd list (hierarchical tree)
 task beads:ready      # bd ready
 task beads:push       # bd dolt push
 task docker:build     # Docker dev image for integration tests
-task container:run    # shell in dev container (repo bind-mounted)
+task docker:shell     # shell in running opencode-server container
 task test:integration # integration tests (mock LLM sidecar)
 task bdui:start   # beads-ui at http://127.0.0.1:3000
 task bdui:stop    # stop beads-ui
