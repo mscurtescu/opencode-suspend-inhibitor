@@ -35,23 +35,33 @@ tasks:
     desc: Run unit tests then smoke tests
     deps: [test:unit, test:smoke]
 
-  container:build:
+  docker:build:
     desc: Build dev container image (PROFILE=ubuntu2404)
     cmds:
       - docker build -t opencode-suspend-inhibitor-dev:${PROFILE:-ubuntu2404} -f docker/Dockerfile.${PROFILE:-ubuntu2404} docker/
 
+  docker:up:
+    desc: Start integration test services (opencode-server + mock-llm)
+    cmds:
+      - docker compose -f docker/docker-compose.yml up -d --build --wait
+
+  docker:down:
+    desc: Stop integration test services
+    cmds:
+      - docker compose -f docker/docker-compose.yml down
+
   container:run:
     desc: Run dev container with repo bind-mounted (interactive shell)
-    deps: [container:build]
+    deps: [docker:build]
     cmds:
       - docker run -it --rm -v "$PWD:/workspace/opencode-suspend-inhibitor:rw" -e PLUGIN_DIR=/workspace/opencode-suspend-inhibitor opencode-suspend-inhibitor-dev:${PROFILE:-ubuntu2404}
 
-  container:test:
+  test:integration:
     desc: Run integration tests (opencode-server + mock LLM sidecar)
+    deps: [docker:up]
     cmds:
-      - docker compose -f docker/docker-compose.yml up -d --build --wait
       - ./scripts/integration-test.sh; EXIT_CODE=$?
-      - docker compose -f docker/docker-compose.yml down
+      - task docker:down
       - exit $EXIT_CODE
 
   beads:ready:

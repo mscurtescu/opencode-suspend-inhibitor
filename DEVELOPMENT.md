@@ -54,7 +54,7 @@ Covers: TypeScript typecheck, `gnome-session-inhibit` on PATH, session registry 
 task test
 ```
 
-Runs unit tests first, then smoke tests (does not include integration tests — run `task container:test` separately).
+Runs unit tests first, then smoke tests (does not include integration tests — run `task test:integration` separately).
 
 ### Integration tests
 
@@ -66,15 +66,15 @@ Uses `docker compose` with two services:
 - **mock-llm** — `ghcr.io/dwmkerr/mock-llm` (OpenAI-compatible echo server)
 
 ```bash
-task container:test
+task test:integration
 ```
 
-Or directly:
+Which runs:
 
 ```bash
-docker compose -f docker/docker-compose.yml up -d --build --wait
-./scripts/integration-test.sh
-docker compose -f docker/docker-compose.yml down
+task docker:up                    # docker compose up -d --build --wait
+./scripts/integration-test.sh     # host-side test script
+task docker:down                  # docker compose down
 ```
 
 What it does:
@@ -95,12 +95,12 @@ Reproducible Linux environment for integration testing and Docker-based developm
 **Requires:** Docker
 
 ```bash
-task container:build              # build image
+task docker:build                 # build image
 task container:run                # interactive shell, repo mounted at /workspace/opencode-suspend-inhibitor
-task container:test               # integration tests (mock LLM sidecar)
+task test:integration             # integration tests (mock LLM sidecar)
 ```
 
-`container:run` depends on `container:build`.
+`container:run` depends on `docker:build`.
 
 Inside the container:
 
@@ -312,9 +312,9 @@ task beads:list       # bd list --flat (one line per issue, with type)
 task beads:list:tree  # bd list (hierarchical tree)
 task beads:ready      # bd ready
 task beads:push       # bd dolt push
-task container:build  # Docker dev image for integration tests
+task docker:build     # Docker dev image for integration tests
 task container:run    # shell in dev container (repo bind-mounted)
-task container:test   # integration tests (mock LLM sidecar)
+task test:integration # integration tests (mock LLM sidecar)
 task bdui:start   # beads-ui at http://127.0.0.1:3000
 task bdui:stop    # stop beads-ui
 task gsi:list:all   # list all active gnome-session-inhibit inhibitors
