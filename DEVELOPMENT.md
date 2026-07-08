@@ -62,7 +62,7 @@ End-to-end test that loads the plugin via OpenCode with a mock LLM provider, sen
 
 Uses `docker compose` with two services:
 
-- **opencode-server** — builds from `docker/Dockerfile.ubuntu2404`, runs `opencode serve` persistently with the plugin + mock provider pre-configured (`docker/opencode.jsonc`). Repo bind-mounted at `/workspace/opencode-suspend-inhibitor`.
+- **opencode** — builds from `docker/Dockerfile.ubuntu2404`, runs `opencode serve` persistently with the plugin + mock provider pre-configured (`docker/opencode.jsonc`). Repo bind-mounted at `/workspace/opencode-suspend-inhibitor`.
 - **mock-llm** — `ghcr.io/dwmkerr/mock-llm` (OpenAI-compatible echo server)
 
 ```bash
@@ -80,13 +80,13 @@ task docker:down                  # docker compose down
 What it does:
 
 1. Docker Compose starts mock-llm first and waits for its health check to pass
-2. opencode-server starts and waits for both mock-llm and its own health check (`GET /global/health`)
+2. opencode starts and waits for both mock-llm and its own health check (`GET /global/health`)
 3. The host-side test script (`scripts/integration-test.sh`) creates a session via `POST /session`
 4. Sends a prompt via `POST /session/:id/prompt_async` (triggers `busy` → `idle` lifecycle)
 5. Polls the session until processing completes (non-zero token count)
 6. Checks the container log file (via `docker compose exec`) for `Plugin initialized`, `Acquired session`, and `Released session`
 
-The test script runs on the **host**, not inside the container. Assertions use `docker compose exec` to read logs from the running opencode-server container.
+The test script runs on the **host**, not inside the container. Assertions use `docker compose exec` to read logs from the running opencode container.
 
 ### Dev container (integration test environment)
 
@@ -96,7 +96,7 @@ Reproducible Linux environment for integration testing and Docker-based developm
 
 ```bash
 task docker:build                 # build image
-task docker:shell                 # shell in running opencode-server container
+task docker:shell                 # shell in running opencode container
 task test:integration             # integration tests (mock LLM sidecar)
 ```
 
@@ -313,7 +313,7 @@ task beads:list:tree  # bd list (hierarchical tree)
 task beads:ready      # bd ready
 task beads:push       # bd dolt push
 task docker:build     # Docker dev image for integration tests
-task docker:shell     # shell in running opencode-server container
+task docker:shell     # shell in running opencode container
 task test:integration # integration tests (mock LLM sidecar)
 task bdui:start   # beads-ui at http://127.0.0.1:3000
 task bdui:stop    # stop beads-ui

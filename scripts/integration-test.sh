@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Host-side integration test.
-# Runs after `docker compose up -d --wait` brings up opencode-server + mock-llm.
+# Runs after `docker compose up -d --wait` brings up opencode + mock-llm.
 # Asserts plugin lifecycle events via the OpenCode API and container logs.
 
 OPENCODE_PORT="${OPENCODE_PORT:-4096}"
@@ -24,7 +24,7 @@ for i in $(seq 1 30); do
   fi
   if [ "$i" -eq 30 ]; then
     echo "  [FAIL] Server did not become ready within 30s" >&2
-    docker compose -f "${COMPOSE_FILE}" logs opencode-server --tail 30
+    docker compose -f "${COMPOSE_FILE}" logs opencode --tail 30
     exit 1
   fi
   sleep 1
@@ -79,7 +79,7 @@ while true; do
   fi
 
   # Also stop if the session has been released (logs are most reliable)
-  if docker compose -f "${COMPOSE_FILE}" exec -T opencode-server grep -q "Released session" "${LOG_FILE}" 2>/dev/null; then
+  if docker compose -f "${COMPOSE_FILE}" exec -T opencode grep -q "Released session" "${LOG_FILE}" 2>/dev/null; then
     echo "    Session released (detected in logs)"
     sleep 2
     break
@@ -100,7 +100,7 @@ PASS=0
 check_log() {
   local label="$1"
   local pattern="$2"
-  if docker compose -f "${COMPOSE_FILE}" exec -T opencode-server grep -q "${pattern}" "${LOG_FILE}" 2>/dev/null; then
+  if docker compose -f "${COMPOSE_FILE}" exec -T opencode grep -q "${pattern}" "${LOG_FILE}" 2>/dev/null; then
     echo "  [PASS] ${label}"
     return 0
   fi
@@ -123,6 +123,6 @@ if [ "${PASS}" -ge 2 ]; then
   exit 0
 else
   echo "==> Integration test FAILED (${PASS}/3 assertions)" >&2
-  docker compose -f "${COMPOSE_FILE}" exec -T opencode-server tail -40 "${LOG_FILE}"
+  docker compose -f "${COMPOSE_FILE}" exec -T opencode tail -40 "${LOG_FILE}"
   exit 1
 fi

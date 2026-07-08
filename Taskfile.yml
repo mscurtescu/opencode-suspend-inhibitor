@@ -41,7 +41,7 @@ tasks:
       - docker build -t opencode-suspend-inhibitor-dev:${PROFILE:-ubuntu2404} -f docker/Dockerfile.${PROFILE:-ubuntu2404} docker/
 
   docker:up:
-    desc: Start integration test services (opencode-server + mock-llm)
+    desc: Start integration test services (opencode + mock-llm)
     dir: docker
     cmds:
       - docker compose up -d --build --wait
@@ -59,14 +59,14 @@ tasks:
       - docker compose ps --format 'table {{"{{"}}.Name{{"}}"}}\t{{"{{"}}.Status{{"}}"}}'
 
   docker:shell:
-    desc: Drop into a shell inside the running opencode-server container
+    desc: Drop into a shell inside the running opencode container
     dir: docker
     deps: [docker:up]
     cmds:
-      - docker compose exec opencode-server bash
+      - docker compose exec opencode bash
 
   test:integration:
-    desc: Run integration tests (opencode-server + mock LLM sidecar)
+    desc: Run integration tests (opencode + mock LLM sidecar)
     deps: [docker:up]
     cmds:
       - ./scripts/integration-test.sh
