@@ -35,6 +35,10 @@ async function withPlatform<T>(
   }
 }
 
+async function withLinux<T>(fn: () => T | Promise<T>): Promise<T> {
+  return withPlatform("linux", fn);
+}
+
 describe("GnomeInhibitor", () => {
   let cleanup: () => void;
 
@@ -47,9 +51,11 @@ describe("GnomeInhibitor", () => {
   });
 
   describe("isLinux", () => {
-    it("returns true on linux", () => {
-      const inhibitor = new GnomeInhibitor();
-      expect(inhibitor.isLinux()).toBe(true);
+    it("returns true on linux", async () => {
+      await withLinux(() => {
+        const inhibitor = new GnomeInhibitor();
+        expect(inhibitor.isLinux()).toBe(true);
+      });
     });
 
     it("returns false on non-linux", async () => {
@@ -70,100 +76,118 @@ describe("GnomeInhibitor", () => {
     });
 
     it("returns true when which exits 0", async () => {
-      const { inhibitor, fakeSpawn } = createHarness(0);
-      expect(await inhibitor.resolveAvailability()).toBe(true);
-      expect(fakeSpawn.calls.length).toBe(1);
-      expect(fakeSpawn.calls[0].cmd[0]).toBe("which");
+      await withLinux(async () => {
+        const { inhibitor, fakeSpawn } = createHarness(0);
+        expect(await inhibitor.resolveAvailability()).toBe(true);
+        expect(fakeSpawn.calls.length).toBe(1);
+        expect(fakeSpawn.calls[0].cmd[0]).toBe("which");
+      });
     });
 
     it("returns false when which exits 1", async () => {
-      const { inhibitor, fakeSpawn } = createHarness(1);
-      expect(await inhibitor.resolveAvailability()).toBe(false);
-      expect(fakeSpawn.calls.length).toBe(1);
+      await withLinux(async () => {
+        const { inhibitor, fakeSpawn } = createHarness(1);
+        expect(await inhibitor.resolveAvailability()).toBe(false);
+        expect(fakeSpawn.calls.length).toBe(1);
+      });
     });
 
     it("caches result — spawns only once", async () => {
-      const { inhibitor, fakeSpawn } = createHarness(0);
-      await inhibitor.resolveAvailability();
-      await inhibitor.resolveAvailability();
-      expect(fakeSpawn.calls.length).toBe(1);
+      await withLinux(async () => {
+        const { inhibitor, fakeSpawn } = createHarness(0);
+        await inhibitor.resolveAvailability();
+        await inhibitor.resolveAvailability();
+        expect(fakeSpawn.calls.length).toBe(1);
+      });
     });
   });
 
   describe("syncInhibitor", () => {
     it("starts inhibitor when count > 0", async () => {
-      const { inhibitor, fakeSpawn } = createHarness(0);
-      await inhibitor.syncInhibitor(1);
-      await flush();
+      await withLinux(async () => {
+        const { inhibitor, fakeSpawn } = createHarness(0);
+        await inhibitor.syncInhibitor(1);
+        await flush();
 
-      expect(fakeSpawn.calls.length).toBe(2);
-      expect(fakeSpawn.calls[1].cmd[0]).toBe("gnome-session-inhibit");
-      expect(existsSync(pidFilePath())).toBe(true);
+        expect(fakeSpawn.calls.length).toBe(2);
+        expect(fakeSpawn.calls[1].cmd[0]).toBe("gnome-session-inhibit");
+        expect(existsSync(pidFilePath())).toBe(true);
+      });
     });
 
     it("does not start duplicate when already running", async () => {
-      const { inhibitor, fakeSpawn } = createHarness(0);
-      await inhibitor.syncInhibitor(1);
-      await flush();
-      await inhibitor.syncInhibitor(1);
+      await withLinux(async () => {
+        const { inhibitor, fakeSpawn } = createHarness(0);
+        await inhibitor.syncInhibitor(1);
+        await flush();
+        await inhibitor.syncInhibitor(1);
 
-      expect(fakeSpawn.calls.length).toBe(2);
+        expect(fakeSpawn.calls.length).toBe(2);
+      });
     });
 
     it("stops inhibitor when count goes to 0", async () => {
-      const { inhibitor, fakeSpawn, fakeKill } = createHarness(0);
-      await inhibitor.syncInhibitor(1);
-      await flush();
-      const inhibitorPid = fakeSpawn.calls[1].pid;
+      await withLinux(async () => {
+        const { inhibitor, fakeSpawn, fakeKill } = createHarness(0);
+        await inhibitor.syncInhibitor(1);
+        await flush();
+        const inhibitorPid = fakeSpawn.calls[1].pid;
 
-      await inhibitor.syncInhibitor(0);
+        await inhibitor.syncInhibitor(0);
 
-      const termCalls = fakeKill.killCalls.filter(
-        (c) => c.pid === inhibitorPid && c.signal === "SIGTERM",
-      );
-      expect(termCalls.length).toBe(1);
-      expect(existsSync(pidFilePath())).toBe(false);
+        const termCalls = fakeKill.killCalls.filter(
+          (c) => c.pid === inhibitorPid && c.signal === "SIGTERM",
+        );
+        expect(termCalls.length).toBe(1);
+        expect(existsSync(pidFilePath())).toBe(false);
+      });
     });
 
     it("does not spawn when unavailable", async () => {
-      const { inhibitor, fakeSpawn } = createHarness(1);
-      await inhibitor.syncInhibitor(1);
-      await flush();
+      await withLinux(async () => {
+        const { inhibitor, fakeSpawn } = createHarness(1);
+        await inhibitor.syncInhibitor(1);
+        await flush();
 
-      expect(fakeSpawn.calls.length).toBe(1);
-      expect(existsSync(pidFilePath())).toBe(false);
+        expect(fakeSpawn.calls.length).toBe(1);
+        expect(existsSync(pidFilePath())).toBe(false);
+      });
     });
 
     it("prunes stale pid file and restarts inhibitor", async () => {
-      const { inhibitor, fakeSpawn, fakeKill } = createHarness(0);
-      await inhibitor.syncInhibitor(1);
-      await flush();
-      const inhibitorPid = fakeSpawn.calls[1].pid;
+      await withLinux(async () => {
+        const { inhibitor, fakeSpawn, fakeKill } = createHarness(0);
+        await inhibitor.syncInhibitor(1);
+        await flush();
+        const inhibitorPid = fakeSpawn.calls[1].pid;
 
-      fakeKill.markDead(inhibitorPid);
-      await inhibitor.syncInhibitor(1);
+        fakeKill.markDead(inhibitorPid);
+        await inhibitor.syncInhibitor(1);
 
-      const inhibitorSpawns = fakeSpawn.calls.filter(
-        (c) => c.cmd[0] === "gnome-session-inhibit",
-      );
-      expect(inhibitorSpawns.length).toBe(2);
+        const inhibitorSpawns = fakeSpawn.calls.filter(
+          (c) => c.cmd[0] === "gnome-session-inhibit",
+        );
+        expect(inhibitorSpawns.length).toBe(2);
+      });
     });
   });
 
   describe("stopInhibitorOnExit", () => {
     it("kills recorded pid and removes pid file", async () => {
-      const { inhibitor, fakeSpawn, fakeKill } = createHarness(0);
-      await inhibitor.syncInhibitor(1);
-      await flush();
-      const inhibitorPid = fakeSpawn.calls[1].pid;
+      await withLinux(async () => {
+        const { inhibitor, fakeSpawn, fakeKill } = createHarness(0);
+        await inhibitor.syncInhibitor(1);
+        await flush();
+        const inhibitorPid = fakeSpawn.calls[1].pid;
 
-      inhibitor.stopInhibitorOnExit();
+        inhibitor.stopInhibitorOnExit();
 
-      const termCalls = fakeKill.killCalls.filter(
-        (c) => c.pid === inhibitorPid && c.signal === "SIGTERM",
-      );
-      expect(termCalls.length).toBe(1);
-      expect(existsSync(pidFilePath())).toBe(false);
+        const termCalls = fakeKill.killCalls.filter(
+          (c) => c.pid === inhibitorPid && c.signal === "SIGTERM",
+        );
+        expect(termCalls.length).toBe(1);
+        expect(existsSync(pidFilePath())).toBe(false);
+      });
     });
 
     it("is no-op when no pid file", () => {
@@ -176,17 +200,19 @@ describe("GnomeInhibitor", () => {
 
   describe("pid file lifecycle", () => {
     it("cleans up pid file when inhibitor process exits on its own", async () => {
-      const { inhibitor, fakeSpawn } = createHarness(0);
-      await inhibitor.syncInhibitor(1);
-      await flush();
+      await withLinux(async () => {
+        const { inhibitor, fakeSpawn } = createHarness(0);
+        await inhibitor.syncInhibitor(1);
+        await flush();
 
-      const child = fakeSpawn.inhibitorChild;
-      expect(child).toBeDefined();
+        const child = fakeSpawn.inhibitorChild;
+        expect(child).toBeDefined();
 
-      child!.fakeExit(0);
-      await flush();
+        child!.fakeExit(0);
+        await flush();
 
-      expect(existsSync(pidFilePath())).toBe(false);
+        expect(existsSync(pidFilePath())).toBe(false);
+      });
     });
   });
 });
