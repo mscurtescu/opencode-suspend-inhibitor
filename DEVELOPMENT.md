@@ -92,11 +92,11 @@ Reproducible Linux environment for integration testing and Docker-based developm
 
 ```bash
 task container:build              # build image
-task container:verify             # non-interactive smoke inside container
 task container:run                # interactive shell, repo mounted at /workspace/opencode-suspend-inhibitor
+task container:test               # integration tests (mock LLM sidecar)
 ```
 
-`container:run` depends on `container:build`. `container:verify` runs the in-container verify script non-interactively.
+`container:run` depends on `container:build`.
 
 Inside the container:
 
@@ -309,8 +309,7 @@ task beads:ready      # bd ready
 task beads:push       # bd dolt push
 task container:build  # Docker dev image for integration tests
 task container:run    # shell in dev container (repo bind-mounted)
-task container:verify # verify container + plugin config
-task container:test  # integration tests (mock LLM sidecar)
+task container:test   # integration tests (mock LLM sidecar)
 task bdui:start   # beads-ui at http://127.0.0.1:3000
 task bdui:stop    # stop beads-ui
 task gsi:list:all   # list all active gnome-session-inhibit inhibitors

@@ -44,13 +44,7 @@ tasks:
     desc: Run dev container with repo bind-mounted (interactive shell)
     deps: [container:build]
     cmds:
-      - docker run -it --rm -v "$PWD:/workspace/opencode-suspend-inhibitor:rw" -e PLUGIN_DIR=/workspace/opencode-suspend-inhibitor -e VERIFY_ON_START=${VERIFY_ON_START:-1} opencode-suspend-inhibitor-dev:${PROFILE:-ubuntu2404}
-
-  container:verify:
-    desc: Verify dev container toolchain and plugin config (non-interactive)
-    deps: [container:build]
-    cmds:
-      - docker run --rm -v "$PWD:/workspace/opencode-suspend-inhibitor:rw" -e PLUGIN_DIR=/workspace/opencode-suspend-inhibitor -e VERIFY_ON_START=0 opencode-suspend-inhibitor-dev:${PROFILE:-ubuntu2404} /opt/container/verify.sh
+      - docker run -it --rm -v "$PWD:/workspace/opencode-suspend-inhibitor:rw" -e PLUGIN_DIR=/workspace/opencode-suspend-inhibitor opencode-suspend-inhibitor-dev:${PROFILE:-ubuntu2404}
 
   container:test:
     desc: Run integration tests (dev container + mock LLM sidecar)

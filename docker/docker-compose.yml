@@ -20,7 +20,6 @@ services:
       - ..:/workspace/opencode-suspend-inhibitor:rw
     environment:
       - MOCK_LLM_URL=http://mock-llm:6556/v1
-      - VERIFY_ON_START=0
     command:
       - /workspace/opencode-suspend-inhibitor/scripts/integration-test.sh
     depends_on:

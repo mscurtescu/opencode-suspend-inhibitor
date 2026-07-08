@@ -27,8 +27,4 @@ EOF
 echo "==> OpenCode config: ${OPENCODE_CONFIG}"
 echo "    plugin: ${PLUGIN_URI}"
 
-if [[ "${VERIFY_ON_START:-1}" == "1" ]]; then
-  /opt/container/verify.sh
-fi
-
 exec "$@"

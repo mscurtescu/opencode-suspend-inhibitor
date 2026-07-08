@@ -9,7 +9,7 @@ One Dockerfile per profile. The filename is the profile id.
 ```bash
 task container:build
 task container:run
-task container:verify
+task container:test
 PROFILE=ubuntu2404 task container:build
 ```
 

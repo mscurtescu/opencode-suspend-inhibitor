@@ -12,7 +12,24 @@ echo "    MOCK_LLM_URL: ${MOCK_LLM_URL}"
 echo "    PLUGIN_DIR:   ${PLUGIN_DIR}"
 
 # Verify prerequisites
+command -v gnome-session-inhibit >/dev/null || { echo "ERROR: gnome-session-inhibit not on PATH" >&2; exit 1; }
 command -v opencode >/dev/null || { echo "ERROR: opencode not on PATH" >&2; exit 1; }
+
+echo "==> Verify toolchain"
+gnome-session-inhibit --version 2>/dev/null || true
+opencode --version
+
+echo "==> Verify plugin mount"
+PLUGIN_PATH="$(cd "${PLUGIN_DIR}" && pwd)"
+PLUGIN_URI="file://${PLUGIN_PATH}"
+[[ -f "${PLUGIN_DIR}/index.ts" ]] || { echo "ERROR: missing ${PLUGIN_DIR}/index.ts" >&2; exit 1; }
+
+echo "==> Verify plugin appears in OpenCode config"
+opencode debug config 2>&1 | grep -q "opencode-suspend-inhibitor" || {
+  echo "Plugin not found in opencode debug config" >&2
+  opencode debug config >&2 || true
+  exit 1
+}
 
 # Configure OpenCode with plugin + mock provider
 PLUGIN_PATH="$(cd "${PLUGIN_DIR}" && pwd)"

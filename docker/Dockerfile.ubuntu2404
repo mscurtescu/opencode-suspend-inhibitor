@@ -17,12 +17,11 @@ RUN apt-get update -qq \
   && curl -fsSL https://opencode.ai/install | bash \
   && ln -sf /root/.opencode/bin/opencode /usr/local/bin/opencode
 
-COPY entrypoint.sh verify.sh /opt/container/
+COPY entrypoint.sh /opt/container/
 RUN chmod +x /opt/container/*.sh
 
 WORKDIR /workspace
 ENV PLUGIN_DIR=/workspace/opencode-suspend-inhibitor
-ENV VERIFY_ON_START=1
 ENV PATH="/root/.opencode/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 ENTRYPOINT ["/opt/container/entrypoint.sh"]
