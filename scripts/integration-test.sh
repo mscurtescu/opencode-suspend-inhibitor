@@ -11,24 +11,10 @@ echo "==> Integration test: suspend-inhibitor + mock LLM"
 echo "    MOCK_LLM_URL: ${MOCK_LLM_URL}"
 echo "    PLUGIN_DIR:   ${PLUGIN_DIR}"
 
-# 1. Verify prerequisites
+# Verify prerequisites
 command -v opencode >/dev/null || { echo "ERROR: opencode not on PATH" >&2; exit 1; }
 
-# 2. Wait for mock-llm to be ready
-echo "==> Waiting for mock-llm..."
-for i in $(seq 1 30); do
-  if curl -sf "${MOCK_LLM_URL}/models" >/dev/null 2>&1; then
-    echo "    mock-llm ready (attempt ${i})"
-    break
-  fi
-  if [ "${i}" -eq 30 ]; then
-    echo "ERROR: mock-llm not ready after 30 attempts" >&2
-    exit 1
-  fi
-  sleep 1
-done
-
-# 3. Configure OpenCode with plugin + mock provider
+# Configure OpenCode with plugin + mock provider
 PLUGIN_PATH="$(cd "${PLUGIN_DIR}" && pwd)"
 PLUGIN_URI="file://${PLUGIN_PATH}"
 
@@ -57,14 +43,14 @@ EOF
 echo "==> OpenCode config:"
 cat "${CONFIG}"
 
-# 4. Run OpenCode with the mock provider
+# Run OpenCode with the mock provider
 echo "==> Running: opencode run --auto -m test-llm/mock \"ok\""
 
 # Capture both stderr (for logs) and let it show in terminal too
 OUTPUT=$(opencode run --auto -m test-llm/mock "ok" 2>&1) || true
 echo "${OUTPUT}"
 
-# 5. Check for expected log entries
+# Check for expected log entries
 echo ""
 echo "==> Checking logs..."
 

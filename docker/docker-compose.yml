@@ -1,6 +1,3 @@
-# Integration test: dev container + mock LLM sidecar
-# Usage: docker compose -f docker/docker-compose.yml up --build --abort-on-container-exit --exit-code-from dev
-
 name: osi
 
 services:
@@ -8,6 +5,12 @@ services:
     image: ghcr.io/dwmkerr/mock-llm
     networks:
       - test-net
+    healthcheck:
+      test: wget -q -O - http://127.0.0.1:6556/health | grep -q healthy
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   dev:
     build:
@@ -21,7 +24,8 @@ services:
     command:
       - /workspace/opencode-suspend-inhibitor/scripts/integration-test.sh
     depends_on:
-      - mock-llm
+      mock-llm:
+        condition: service_healthy
     networks:
       - test-net
 

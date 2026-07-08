@@ -77,8 +77,8 @@ docker compose -f docker/docker-compose.yml up --build --abort-on-container-exit
 
 What it does:
 
-1. Starts the mock LLM server and waits for it to be ready (`/v1/models`)
-2. Creates an OpenCode config with `file://` plugin + mock provider pointing at `http://mock-llm:6556/v1`
+1. Docker Compose starts mock-llm first and waits for its health check to pass
+2. The test script creates an OpenCode config with `file://` plugin + mock provider pointing at `http://mock-llm:6556/v1`
 3. Runs `opencode run --auto -m test-llm/mock "ok"`
 4. Checks the output and log file for `Plugin initialized` and `Acquired session` (required) and `Released session` (timing-dependent)
 
