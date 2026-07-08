@@ -50,6 +50,11 @@ tasks:
     cmds:
       - docker compose -f docker/docker-compose.yml down
 
+  docker:ps:
+    desc: Show service name and status
+    cmds:
+      - docker compose -f docker/docker-compose.yml ps --format "table {{.Name}}\t{{.Status}}"
+
   docker:shell:
     desc: Drop into a shell inside the running opencode-server container
     deps: [docker:up]
