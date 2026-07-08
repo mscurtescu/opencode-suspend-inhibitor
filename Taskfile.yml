@@ -42,24 +42,28 @@ tasks:
 
   docker:up:
     desc: Start integration test services (opencode-server + mock-llm)
+    dir: docker
     cmds:
-      - docker compose -f docker/docker-compose.yml up -d --build --wait
+      - docker compose up -d --build --wait
 
   docker:down:
     desc: Stop integration test services
+    dir: docker
     cmds:
-      - docker compose -f docker/docker-compose.yml down
+      - docker compose down
 
   docker:ps:
     desc: Show service name and status
+    dir: docker
     cmds:
-      - docker compose -f docker/docker-compose.yml ps --format 'table {{"{{"}}.Name{{"}}"}}\t{{"{{"}}.Status{{"}}"}}'
+      - docker compose ps --format 'table {{"{{"}}.Name{{"}}"}}\t{{"{{"}}.Status{{"}}"}}'
 
   docker:shell:
     desc: Drop into a shell inside the running opencode-server container
+    dir: docker
     deps: [docker:up]
     cmds:
-      - docker compose -f docker/docker-compose.yml exec opencode-server bash
+      - docker compose exec opencode-server bash
 
   test:integration:
     desc: Run integration tests (opencode-server + mock LLM sidecar)
