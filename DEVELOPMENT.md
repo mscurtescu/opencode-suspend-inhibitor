@@ -54,7 +54,35 @@ Covers: TypeScript typecheck, `gnome-session-inhibit` on PATH, session registry 
 task test
 ```
 
-Runs unit tests first, then smoke tests.
+Runs unit tests first, then smoke tests (does not include integration tests — run `task container:test` separately).
+
+### Integration tests
+
+End-to-end test that loads the plugin via OpenCode with a mock LLM provider, sends a prompt, and asserts the plugin logs the expected lifecycle events (`Plugin initialized`, `Acquired session`, `Released session`).
+
+Uses `docker compose` with two containers:
+
+- **dev** — the existing dev container (builds from `docker/Dockerfile.ubuntu2404`), repo bind-mounted
+- **mock-llm** — `ghcr.io/dwmkerr/mock-llm` (OpenAI-compatible echo server)
+
+```bash
+task container:test
+```
+
+Or directly:
+
+```bash
+docker compose -f docker/docker-compose.yml up --build --abort-on-container-exit --exit-code-from dev
+```
+
+What it does:
+
+1. Starts the mock LLM server and waits for it to be ready (`/v1/models`)
+2. Creates an OpenCode config with `file://` plugin + mock provider pointing at `http://mock-llm:6556/v1`
+3. Runs `opencode run --auto -m test-llm/mock "ok"`
+4. Checks the output and log file for `Plugin initialized` and `Acquired session` (required) and `Released session` (timing-dependent)
+
+The `docker compose` command cleans up both containers when the test finishes. Use `--abort-on-container-exit` and `--exit-code-from dev` so the exit code reflects the test result.
 
 ### Dev container (integration test environment)
 
@@ -282,6 +310,7 @@ task beads:push       # bd dolt push
 task container:build  # Docker dev image for integration tests
 task container:run    # shell in dev container (repo bind-mounted)
 task container:verify # verify container + plugin config
+task container:test  # integration tests (mock LLM sidecar)
 task bdui:start   # beads-ui at http://127.0.0.1:3000
 task bdui:stop    # stop beads-ui
 task gsi:list:all   # list all active gnome-session-inhibit inhibitors

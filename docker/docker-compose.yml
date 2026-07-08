@@ -1,0 +1,29 @@
+# Integration test: dev container + mock LLM sidecar
+# Usage: docker compose -f docker/docker-compose.yml up --build --abort-on-container-exit --exit-code-from dev
+
+name: osi
+
+services:
+  mock-llm:
+    image: ghcr.io/dwmkerr/mock-llm
+    networks:
+      - test-net
+
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.ubuntu2404
+    volumes:
+      - ..:/workspace/opencode-suspend-inhibitor:rw
+    environment:
+      - MOCK_LLM_URL=http://mock-llm:6556/v1
+      - VERIFY_ON_START=0
+    command:
+      - /workspace/opencode-suspend-inhibitor/scripts/integration-test.sh
+    depends_on:
+      - mock-llm
+    networks:
+      - test-net
+
+networks:
+  test-net:

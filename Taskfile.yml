@@ -52,6 +52,11 @@ tasks:
     cmds:
       - docker run --rm -v "$PWD:/workspace/opencode-suspend-inhibitor:rw" -e PLUGIN_DIR=/workspace/opencode-suspend-inhibitor -e VERIFY_ON_START=0 opencode-suspend-inhibitor-dev:${PROFILE:-ubuntu2404} /opt/container/verify.sh
 
+  container:test:
+    desc: Run integration tests (dev container + mock LLM sidecar)
+    cmds:
+      - docker compose -f docker/docker-compose.yml up --build --abort-on-container-exit --exit-code-from dev
+
   beads:ready:
     desc: Show unblocked beads issues
     cmds:
