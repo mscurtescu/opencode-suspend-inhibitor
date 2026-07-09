@@ -16,6 +16,11 @@ tasks:
     cmds:
       - bunx tsc --noEmit
 
+  lint:
+    desc: Run Biome linter and formatter checks
+    cmds:
+      - bunx biome check .
+
   build:
     desc: Compile TypeScript to dist/
     deps: [typecheck]
