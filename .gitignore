@@ -2,6 +2,9 @@ node_modules/
 dist/
 .idea/
 
+# Claude (not used in this OpenCode project)
+.claude/
+
 # Beads / Dolt files (added by bd init)
 .dolt/
 *.db
