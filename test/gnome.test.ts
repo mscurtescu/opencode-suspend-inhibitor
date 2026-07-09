@@ -1,5 +1,5 @@
-import { existsSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import { existsSync } from "node:fs";
 
 import { GnomeInhibitor } from "../src/backends/gnome";
 import { TMP_DIR } from "../src/sessions";

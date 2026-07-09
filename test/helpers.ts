@@ -95,21 +95,26 @@ export class FakeKill {
 export function statusEvent(
   sessionID: string,
   type: string,
-): { type: string; properties: { sessionID: string; status: { type: string } } } {
+): {
+  type: string;
+  properties: { sessionID: string; status: { type: string } };
+} {
   return {
     type: "session.status",
     properties: { sessionID, status: { type } },
   };
 }
 
-export function idleEvent(
-  sessionID: string,
-): { type: string; properties: { sessionID: string } } {
+export function idleEvent(sessionID: string): {
+  type: string;
+  properties: { sessionID: string };
+} {
   return { type: "session.idle", properties: { sessionID } };
 }
 
-export function errorEvent(
-  sessionID: string,
-): { type: string; properties: { sessionID: string } } {
+export function errorEvent(sessionID: string): {
+  type: string;
+  properties: { sessionID: string };
+} {
   return { type: "session.error", properties: { sessionID } };
 }

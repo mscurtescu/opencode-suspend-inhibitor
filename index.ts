@@ -71,7 +71,10 @@ export const SleepInhibitorPlugin: Plugin = async ({ client }) => {
   process.once("SIGTERM", cleanup);
   process.once("SIGHUP", cleanup);
 
-  const sync = async (sessionID: string | undefined, action: "acquire" | "release") => {
+  const sync = async (
+    sessionID: string | undefined,
+    action: "acquire" | "release",
+  ) => {
     if (!sessionID) {
       void log("warn", "Session event missing sessionID", { action });
       return;
@@ -83,11 +86,15 @@ export const SleepInhibitorPlugin: Plugin = async ({ client }) => {
     const active = getActiveSessions();
     await inhibitor.syncInhibitor(active.length);
 
-    void log("info", action === "acquire" ? "Acquired session" : "Released session", {
-      sessionID,
-      activeSessions: active.length,
-      sessionIDs: active,
-    });
+    void log(
+      "info",
+      action === "acquire" ? "Acquired session" : "Released session",
+      {
+        sessionID,
+        activeSessions: active.length,
+        sessionIDs: active,
+      },
+    );
   };
 
   return {

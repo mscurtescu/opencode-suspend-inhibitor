@@ -1,5 +1,5 @@
-import type { Plugin } from "@opencode-ai/plugin";
 import { beforeEach, describe, expect, it, mock } from "bun:test";
+import type { Plugin } from "@opencode-ai/plugin";
 
 // --- Mock state (configurable per test) ---
 let isLinuxResult = true;
@@ -211,7 +211,9 @@ describe("SleepInhibitorPlugin", () => {
       expect(mockAcquire).toHaveBeenCalledTimes(0);
       expect(mockRelease).toHaveBeenCalledTimes(0);
 
-      const warnLog = logs.find((l) => l.message === "Session event missing sessionID");
+      const warnLog = logs.find(
+        (l) => l.message === "Session event missing sessionID",
+      );
       expect(warnLog).toBeDefined();
       expect(warnLog!.level).toBe("warn");
     });
