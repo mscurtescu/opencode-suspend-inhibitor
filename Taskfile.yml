@@ -18,16 +18,14 @@ tasks:
 
   build:
     desc: Compile TypeScript to dist/
+    deps: [typecheck]
     cmds:
       - bunx tsc
 
   test:unit:
     desc: Run unit tests (bun:test, headless-CI friendly)
-    cmds:
-      - bun test
-
-  test:
-    desc: Run unit tests
+    aliases: [test]
+    deps: [typecheck]
     cmds:
       - bun test
 
