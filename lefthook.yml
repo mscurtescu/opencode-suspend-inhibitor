@@ -1,0 +1,16 @@
+pre-commit:
+  parallel: true
+  commands:
+    beads:
+      run: mise exec -- bd hooks run pre-commit
+    lint:
+      run: task lint
+    typecheck:
+      run: task typecheck
+
+pre-push:
+  commands:
+    test:
+      run: task test
+    beads:
+      run: mise exec -- bd hooks run pre-push
