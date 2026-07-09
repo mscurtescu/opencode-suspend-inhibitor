@@ -151,7 +151,8 @@ describe("SleepInhibitorPlugin", () => {
 
     beforeEach(async () => {
       const result = await SleepInhibitorPlugin({ client } as never);
-      event = result.event!;
+      const ev = result.event;
+      if (ev) event = ev;
     });
 
     it("session.status busy → acquire + syncInhibitor", async () => {
