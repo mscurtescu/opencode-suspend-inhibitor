@@ -183,7 +183,7 @@ describe("GnomeInhibitor", () => {
       const child = fakeSpawn.inhibitorChild;
       expect(child).toBeDefined();
 
-      child!.fakeExit(0);
+      child?.fakeExit(0);
       await flush();
 
       expect(existsSync(pidFilePath())).toBe(false);

@@ -3,8 +3,8 @@ import { beforeEach, describe, expect, it, mock } from "bun:test";
 // --- Mock state (configurable per test) ---
 let isLinuxResult = true;
 let availabilityResult = true;
-const mockAcquire = mock((id: string) => {});
-const mockRelease = mock((id: string) => {});
+const mockAcquire = mock((_id: string) => {});
+const mockRelease = mock((_id: string) => {});
 const mockGetActiveSessions = mock((): string[] => []);
 const mockStartupCleanup = mock((): string[] => []);
 const mockSyncInhibitor = mock(async (_count: number) => {});
@@ -102,7 +102,7 @@ describe("SleepInhibitorPlugin", () => {
       const result = await SleepInhibitorPlugin({ client } as never);
 
       expect(result.event).toBeTypeOf("function");
-      await result.event!({ event: { type: "session.status" } } as never);
+      await result.event?.({ event: { type: "session.status" } } as never);
 
       expect(logs.length).toBe(1);
       expect(logs[0].level).toBe("warn");
@@ -116,7 +116,7 @@ describe("SleepInhibitorPlugin", () => {
     it("returns no-op and logs warn", async () => {
       isLinuxResult = true;
       availabilityResult = false;
-      const result = await SleepInhibitorPlugin({ client } as never);
+      const _result = await SleepInhibitorPlugin({ client } as never);
 
       expect(logs.length).toBe(1);
       expect(logs[0].level).toBe("warn");
@@ -133,10 +133,10 @@ describe("SleepInhibitorPlugin", () => {
     it("logs initialization with available=true", () => {
       const initLog = logs.find((l) => l.message === "Plugin initialized");
       expect(initLog).toBeDefined();
-      expect(initLog!.level).toBe("info");
-      expect(initLog!.extra.available).toBe(true);
-      expect(initLog!.extra.backend).toBe("gnome");
-      expect(initLog!.extra.plugin).toBe("opencode-suspend-inhibitor");
+      expect(initLog?.level).toBe("info");
+      expect(initLog?.extra.available).toBe(true);
+      expect(initLog?.extra.backend).toBe("gnome");
+      expect(initLog?.extra.plugin).toBe("opencode-suspend-inhibitor");
     });
 
     it("calls startupCleanup and syncInhibitor on init", () => {
@@ -214,7 +214,7 @@ describe("SleepInhibitorPlugin", () => {
         (l) => l.message === "Session event missing sessionID",
       );
       expect(warnLog).toBeDefined();
-      expect(warnLog!.level).toBe("warn");
+      expect(warnLog?.level).toBe("warn");
     });
 
     it("unrelated event type → no-op", async () => {
