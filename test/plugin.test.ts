@@ -146,7 +146,7 @@ describe("SleepInhibitorPlugin", () => {
   });
 
   describe("event routing", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: test convenience
     let event: (ctx: any) => Promise<void>;
 
     beforeEach(async () => {
