@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
-import type { Plugin } from "@opencode-ai/plugin";
 
 // --- Mock state (configurable per test) ---
 let isLinuxResult = true;

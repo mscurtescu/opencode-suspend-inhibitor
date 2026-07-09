@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <title>Power icon</title>
   <rect width="512" height="512" fill="#131010"/>
   <path d="M278 198 A44 44 0 1 1 234 198" fill="none" stroke="#4CAF50" stroke-width="16" stroke-linecap="round"/>
   <line x1="256" y1="180" x2="256" y2="232" stroke="#4CAF50" stroke-width="16" stroke-linecap="round"/>
