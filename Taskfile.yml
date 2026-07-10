@@ -82,7 +82,8 @@ tasks:
       - chmod 700 .beads
       - bd version
       - bd bootstrap
-      - 'bd config set beads.role "maintainer"'
+      - bd config set beads.role maintainer
+      - bd hooks install --chain
       - bd doctor
 
   beads:ready:
