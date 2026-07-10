@@ -308,6 +308,7 @@ task build        # compile TypeScript to dist/
 task test:unit    # unit tests (bun:test, headless-CI friendly)
 task test:smoke   # smoke tests (typecheck, session registry, gnome-session-inhibit)
 task test         # unit + smoke tests
+task beads:bootstrap  # join an existing Beads project (install, bootstrap, set role, verify)
 task beads:list       # bd list --flat (one line per issue, with type)
 task beads:list:tree  # bd list (hierarchical tree)
 task beads:ready      # bd ready

@@ -70,6 +70,21 @@ tasks:
     cmds:
       - ./scripts/integration-test.sh
 
+  beads:bootstrap:
+    desc: Join an existing beads project (install, bootstrap, set role, verify)
+    preconditions:
+      - sh: test -d .beads
+        msg: ".beads is missing; this does not appear to be an existing Beads project."
+    status:
+      - bd info >/dev/null 2>&1
+    cmds:
+      - mise install
+      - chmod 700 .beads
+      - bd version
+      - bd bootstrap
+      - 'bd config set beads.role "maintainer"'
+      - bd doctor
+
   beads:ready:
     desc: Show unblocked beads issues
     cmds:
